@@ -153,6 +153,6 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     final_df <- original_pred$pred
   }
 
-  return(list(final_df, R2))
+  return(list(final_df, original_pred$lmer, original_pred$glmer))
 
 }
