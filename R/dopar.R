@@ -1,0 +1,1 @@
+`%dopar%` <- foreach::`%dopar%`
