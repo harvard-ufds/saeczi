@@ -52,11 +52,9 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     params_and_domain <- data.frame(dom = zi_model_coefs$domain_levels,
                                     b_i = zi_model_coefs$b_i)
 
-    joined_pop_bi <- dplyr::left_join(
-      data.frame(dom = pop_dat[ , domain_level, drop = T]),
-      params_and_domain,
-      by = "dom"
-    )
+    joined_pop_bi <- merge(x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
+                           y = params_and_domain, by = "dom", all.x = TRUE)
+
 
     x_log_matrix <- stats::model.matrix(
       stats::as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
@@ -87,8 +85,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
       )
     )
 
-    random_effects <- individual_random_errors |>
-      dplyr::left_join(area_random_errors, by = "dom")
+    random_effects <- merge(x = individual_random_errors, y = area_random_errors, by = "dom", all.x = TRUE)
 
     # predict probability of non-zeros
     p_hat_i <- exp(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)/
@@ -116,9 +113,9 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     )
 
     # domain level estimates for bootstrap population data
-    boot_pop_param <- boot_pop_data |>
-      dplyr::group_by(domain) |>
-      dplyr::summarize(domain_est = mean(response))
+    boot_pop_param <- stats::setNames(aggregate(response ~ domain,
+              data = boot_pop_data,
+              FUN = mean), c("domain", "domain_est"))
 
     #diff <- boot_pop_param$domain_est - truth$biomass
 
@@ -136,12 +133,13 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
                         boot_rep(boot_pop_data, samp_dat, domain_level, boot_lin_formula, boot_log_formula)
                       }
 
-    final_df <- mse_df |>
-      dplyr::group_by(domain) |>
-      dplyr::summarise(mse = sum(sq_error)/B) |>
-      dplyr::left_join(original_pred$pred, by = "domain") |>
-      dplyr::select(domain, mse, est = Y_hat_j ) |>
-      dplyr::ungroup()
+    final_df <- stats::setNames(aggregate(sq_error ~ domain,
+                                          data = mse_df,
+                                          FUN = function(x) sum(x)/B), c("domain", "mse"))
+
+    final_df <- merge(x = final_df, y = original_pred$pred, by = "domain", all.x = TRUE)
+
+    final_df <- stats::setNames(final_df[ ,c("domain", "mse", "Y_hat_j")], c("domain", "mse", "est"))
 
   } else if (mse_est == T & boot_type == "vanilla") {
 

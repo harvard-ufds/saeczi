@@ -6,7 +6,7 @@ mse_coefs <- function(lmer_model, glmer_model) {
   model_summary_df <- data.frame(summary(lmer_model)$varcor)
 
   sig2_mu_hat <- model_summary_df[1, ]$vcov
-  sig2_eps_hat <- dplyr::filter(model_summary_df, grp == "Residual")$vcov
+  sig2_eps_hat <- subset(model_summary_df, grp == "Residual")$vcov
 
   # from glmer model
   alpha_1 <- glmer_model@beta

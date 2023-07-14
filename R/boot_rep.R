@@ -19,10 +19,10 @@ boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_lo
     }
   )
 
-  squared_error <-
-    dplyr::left_join(boot_samp_fit$pred, boot_truth, by = "domain") |>
-    dplyr::mutate(sq_error = (Y_hat_j - domain_est)^2) |>
-    dplyr::select(domain, sq_error)
+  squared_error <- merge(x = boot_samp_fit$pred, y = boot_truth, by = "domain", all.x = TRUE) |>
+    transform(sq_error = (Y_hat_j - domain_est)^2)
+
+  squared_error <- squared_error[ ,c("domain", "sq_error")]
 
   return(squared_error)
 }
