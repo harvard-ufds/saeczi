@@ -20,7 +20,6 @@ LazyData: true
 Imports: 
     dplyr,
     stats,
-    plm,
     lme4,
     purrr,
     expss,

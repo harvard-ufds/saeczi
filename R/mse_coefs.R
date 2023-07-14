@@ -11,7 +11,7 @@ mse_coefs <- function(lmer_model, glmer_model) {
   # from glmer model
   alpha_1 <- glmer_model@beta
 
-  b_i <- plm::ranef(glmer_model)[[1]][,1]
+  b_i <- lme4::ranef(glmer_model)[[1]][,1]
   b_domain_levels <- rownames(lme4::ranef(glmer_model)[[1]])
 
   return(list(
