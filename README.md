@@ -1,1 +1,43 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# Development Mode
+
+saezi is still under development. Please use at your own risk!
+
 # saezi
+
+saezi is an R package that allows for the fitting of a zero-inflation
+estimator onto a sample dataset. Please note that, in order for a
+dataset to compatible with the zero-inflation estimator, the dataset
+must be of a sample dataset, where the means at the domain level of what
+would be considered a “population” dataset for the auxiliary variables
+must be available. To fit the zero-inflation estimator,first analyze the
+sample data and find a set of auxiliary variables that create a good
+model for both the linear regression model, as well as the logistic
+regression model. Lastly, assess the number of repetitions desired when
+fitting the bootstrap sample to estimate the variance. Once all of those
+things are decided, the unit_zi function can be used to predict domain
+level estimates of a sample dataset.
+
+## Installation
+
+You can install saezi from github with:
+
+``` r
+# install.packages("devtools")
+#devtools::install_github("saezi/saezi")
+```
+
+## Example
+
+Here’s an example of fitting the Horvitz-Thompson estimator:
+
+``` r
+#library(saezi)
+
+## Estimates the mean and total of the api00 variable using the apisrs dataset in the survey package
+#library(survey)
+#data(api)
+#horvitzThompson(y = apisrs$api00, pi = apisrs$pw^(-1), var_est = TRUE, var_method = "lin_HTSRS")
+```
