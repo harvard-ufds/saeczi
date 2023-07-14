@@ -128,7 +128,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     boot_lin_formula <- stats::as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
     boot_log_formula <- stats::as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
 
-    mse_df <- foreach::foreach(i = 1:B,
+    mse_df <-  foreach::foreach(i = 1:B,
                       .combine = 'rbind') %dopar% {
                         boot_rep(boot_pop_data, samp_dat, domain_level, boot_lin_formula, boot_log_formula)
                       }

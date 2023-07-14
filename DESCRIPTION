@@ -21,5 +21,7 @@ Imports:
     stats,
     lme4,
     purrr,
-    foreach
+    foreach, 
+    doFuture,
+    progressr
 RoxygenNote: 7.2.3

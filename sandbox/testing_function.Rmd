@@ -20,6 +20,9 @@ library(parallel)
 cl <- makeCluster(parallel::detectCores() / 2)
 doParallel::registerDoParallel(cl)
 
+library(foreach)
+#future::plan("multisession", workers = 4)
+
 ```
 
 
@@ -58,8 +61,15 @@ pop_dat <-  pop_dat[,-c(28:33)]
 
 #correct_one <- zi_est
 
+##do future 
+devtools::load_all()
 set.seed(10)
-zi_est <- unit_zi(samp_dat, pop_dat, DRYBIO ~ tcc, domain_level = "SUBSECTION", mse_est = T, B = 25)
+t1 <- Sys.time()
+zi_est <- unit_zi(samp_dat, pop_dat, DRYBIO ~ tcc, domain_level = "SUBSECTION", mse_est = T, B = 1500)
+t2 <- Sys.time()
+t2 - t1 
+#foeach, dopar: 8.17908, 8.027853
+#foeach, dofuture, B = 1500: 54.21819 
 
 ```
 
