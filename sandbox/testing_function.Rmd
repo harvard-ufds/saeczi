@@ -15,7 +15,10 @@ library(stringr)
 library(tidyverse)
 library(foreach)
 library(expss)
-library(saezi)
+devtools::load_all()
+library(parallel)
+cl <- makeCluster(parallel::detectCores() / 2)
+doParallel::registerDoParallel(cl)
 
 ```
 
@@ -23,6 +26,7 @@ library(saezi)
 ```{r}
 
 pop_dat <- readRDS("/Users/dinan_elsyad/Desktop/summer research/sim-studies/sandbox/sim_samp.rds")
+#pop_dat <- readRDS("/home/grayson/Documents/UFDS2023/sim-studies/sandbox/sim_samp.rds")
 
 counties <- unique(pop_dat$DOMAIN)
 
