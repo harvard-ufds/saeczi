@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README.Rmd
+boot_rep.R
+fit_zi.R
+mse_coefs.R

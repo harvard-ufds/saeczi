@@ -1,0 +1,30 @@
+Package: saezi
+Type: Package
+Title: Small Area Estimation using Zero Inflation Estimator
+Version: 0.1.0
+Authors@R: c(person("Dinan", "Elsyad", role = c("aut", "cre", "cph"),
+                    email = "dinanelsyad@college.harvard.edu"),
+            person("Grayson", "White", role = "aut"),
+            person("Kelly", "McConville", role = "aut"),
+            person("Josh", "Yamamoto", role = "ctb")
+            )
+Maintainer: Dinan Elsyad <dinanelsyad@college.harvard.edu>
+Description: A package that simplifies the process of fitting a zero-inflated estimator
+    onto a dataset. This estimator is a combination of a linear regression model 
+    and a logistic regression model which is summarized by Yamamoto et al. (CITE) 
+    The variance is estimated through a bootstrapping method which is given 
+    by Chandra et al. (CITE)
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dplyr,
+    stats,
+    plm,
+    lme4,
+    purrr,
+    expss,
+    foreach, 
+    rlang, 
+    stringr
+RoxygenNote: 7.1.2
