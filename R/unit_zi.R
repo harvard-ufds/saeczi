@@ -24,14 +24,14 @@
 unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, domain_level = "COUNTYFIPS",
                     B = 100, mse_est = F, boot_type = "parametric"){
 
-  if (!rlang::is_formula(lin_formula)) {
+  if(!("formula" %in% class(lin_formula))) {
     lin_formula <- stats::as.formula(lin_formula)
-    message("model formula was converted to class 'formula'")
+    message("lin_formula was converted to class 'formula'")
   }
 
-  if (!rlang::is_formula(log_formula)) {
+  if(!("formula" %in% class(log_formula))) {
     log_formula <- stats::as.formula(log_formula)
-    message("model formula was converted to class 'formula'")
+    message("log_formula was converted to class 'formula'")
   }
 
   # creating strings of original X, Y names

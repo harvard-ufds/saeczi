@@ -23,6 +23,5 @@ Imports:
     lme4,
     purrr,
     foreach, 
-    rlang, 
     stringr
 RoxygenNote: 7.2.3
