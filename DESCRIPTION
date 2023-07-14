@@ -2,11 +2,11 @@ Package: saezi
 Type: Package
 Title: Small Area Estimation using Zero Inflation Estimator
 Version: 0.1.0
-Authors@R: c(person("Dinan", "Elsyad", role = c("aut", "cre", "cph"),
+Authors@R: c(person("Dinan", "Elsyad", role = c("aut", "cre"),
                     email = "dinanelsyad@college.harvard.edu"),
             person("Grayson", "White", role = "aut"),
             person("Kelly", "McConville", role = "aut"),
-            person("Josh", "Yamamoto", role = "ctb")
+            person("Josh", "Yamamoto", role = "aut")
             )
 Maintainer: Dinan Elsyad <dinanelsyad@college.harvard.edu>
 Description: A package that simplifies the process of fitting a zero-inflated estimator
