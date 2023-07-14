@@ -44,7 +44,7 @@ fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
     unit_level_preds = unit_level_preds) |>
     dplyr::group_by(domain) |>
     dplyr::summarise(Y_hat_j = mean(unit_level_preds)) |>
-    ungroup()
+    dplyr::ungroup()
 
   return(list(lmer = lmer_nz, glmer = glmer_z, pred = zi_domain_preds))
 
