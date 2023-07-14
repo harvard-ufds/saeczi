@@ -20,6 +20,7 @@
 #'
 #' The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
 #' as well as the predictor variables for the function to work.
+#' @importFrom foreach %dopar%
 #' @export
 unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, domain_level = "COUNTYFIPS",
                     B = 100, mse_est = F, boot_type = "parametric"){

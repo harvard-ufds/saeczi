@@ -26,5 +26,6 @@ Imports:
     expss,
     foreach, 
     rlang, 
-    stringr
+    stringr, 
+    doParallel
 RoxygenNote: 7.2.3
