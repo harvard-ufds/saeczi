@@ -22,6 +22,5 @@ Imports:
     stats,
     lme4,
     purrr,
-    foreach, 
-    stringr
+    foreach
 RoxygenNote: 7.2.3

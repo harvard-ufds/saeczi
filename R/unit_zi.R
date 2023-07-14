@@ -36,8 +36,8 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
 
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
-  lin_X <- unlist(stringr::str_extract_all(deparse(lin_formula[[3]]), "\\w+"))
-  log_X <- unlist(stringr::str_extract_all(deparse(log_formula[[3]]), "\\w+"))
+  lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
+  log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
 
   original_pred <- fit_zi(samp_dat, pop_dat, lin_formula, log_formula, domain_level)
 

@@ -1,8 +1,8 @@
 fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
 
   Y <- deparse(lin_formula[[2]])
-  lin_X <- unlist(stringr::str_extract_all(deparse(lin_formula[[3]]), "\\w+"))
-  log_X <- unlist(stringr::str_extract_all(deparse(log_formula[[3]]), "\\w+"))
+  lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
+  log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
 
   # function will always treat domain_level as the random intercept
   rand_intercept <- paste0("( 1 | ", domain_level, " )")
