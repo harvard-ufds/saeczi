@@ -43,7 +43,7 @@ fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
     domain = pop_dat[ , domain_level, drop = T],
     unit_level_preds = unit_level_preds)
 
-  zi_domain_preds <- stats::setNames(aggregate(unit_level_preds ~ domain, data = zi_domain_preds,
+  zi_domain_preds <- stats::setNames(stats::aggregate(unit_level_preds ~ domain, data = zi_domain_preds,
                                         FUN = mean), c("domain", "Y_hat_j"))
 
   return(list(lmer = lmer_nz, glmer = glmer_z, pred = zi_domain_preds))

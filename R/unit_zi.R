@@ -113,7 +113,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     )
 
     # domain level estimates for bootstrap population data
-    boot_pop_param <- stats::setNames(aggregate(response ~ domain,
+    boot_pop_param <- stats::setNames(stats::aggregate(response ~ domain,
               data = boot_pop_data,
               FUN = mean), c("domain", "domain_est"))
 
@@ -133,7 +133,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
                         boot_rep(boot_pop_data, samp_dat, domain_level, boot_lin_formula, boot_log_formula)
                       }
 
-    final_df <- stats::setNames(aggregate(sq_error ~ domain,
+    final_df <- stats::setNames(stats::aggregate(sq_error ~ domain,
                                           data = mse_df,
                                           FUN = function(x) sum(x)/B), c("domain", "mse"))
 
