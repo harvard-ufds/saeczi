@@ -22,7 +22,6 @@ Imports:
     stats,
     lme4,
     purrr,
-    expss,
     foreach, 
     rlang, 
     stringr
