@@ -24,10 +24,6 @@
 unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, domain_level = "COUNTYFIPS",
                     B = 100, mse_est = F, boot_type = "parametric"){
 
-  slice_samp <- function(.data, n, replace = TRUE) {
-    dplyr::slice_sample(.data = .data, n = n, replace = replace)
-  }
-
   if (!rlang::is_formula(lin_formula)) {
     lin_formula <- stats::as.formula(lin_formula)
     message("model formula was converted to class 'formula'")
