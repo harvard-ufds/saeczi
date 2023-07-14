@@ -3,7 +3,8 @@ boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_lo
   boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = pop_boot,
                                       FUN = mean), c("domain", "domain_est"))
 
-  by_domains <- pop_boot |> dplyr::group_split(domain)
+  by_domains <- split(pop_boot, f = pop_boot$domain)
+
   num_domains <- length(by_domains)
   num_plots <- data.frame(table(samp_dat[ ,domain_level]))
   boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
