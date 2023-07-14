@@ -1,0 +1,62 @@
+---
+title: "testing_function"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(foreach)
+library(expss)
+library(saezi)
+
+```
+
+
+```{r}
+
+pop_dat <- readRDS("/Users/dinan_elsyad/Desktop/summer research/sim-studies/sandbox/sim_samp.rds")
+
+counties <- unique(pop_dat$DOMAIN)
+
+samp_dat <- data.frame(matrix(ncol = ncol(pop_dat), nrow = 0))
+colnames(samp_dat) <- colnames(pop_dat)
+
+#creating sample data 
+for (i in 1:length(counties)) {
+  sub <- subset(pop_dat, DOMAIN == counties[i])
+  num_plot <- as.integer(.15 * nrow(sub))
+  
+  samp_plots <- sub %>%
+        slice_sample(n = num_plot, replace = FALSE) %>%
+        as.data.frame()
+  
+  samp_dat <- rbind(samp_dat, samp_plots)
+}
+
+#removing response variable from county data 
+pop_dat <-  pop_dat[,-c(28:33)]
+
+
+```
+
+
+## test
+
+```{r}
+
+#correct_one <- zi_est
+
+set.seed(10)
+zi_est <- unit_zi(samp_dat, pop_dat, DRYBIO ~ tcc, domain_level = "SUBSECTION", mse_est = T, B = 25)
+
+```
+
+

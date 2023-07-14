@@ -1,7 +1,7 @@
 boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_log_formula) {
 
-  boot_truth <- pop_boot |> dplyr::group_by(domain) |>
-    dplyr::summarize(domain_est = mean(response))
+  boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = pop_boot,
+                                      FUN = mean), c("domain", "domain_est"))
 
   by_domains <- pop_boot |> dplyr::group_split(domain)
   num_domains <- length(by_domains)
