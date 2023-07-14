@@ -41,9 +41,9 @@ fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
   # where d = # of domains
   zi_domain_preds <- data.frame(
     domain = pop_dat[ , domain_level, drop = T],
-    unit_level_preds = unit_level_preds) %>%
-    dplyr::group_by(domain) %>%
-    dplyr::summarise(Y_hat_j = mean(unit_level_preds)) %>%
+    unit_level_preds = unit_level_preds) |>
+    dplyr::group_by(domain) |>
+    dplyr::summarise(Y_hat_j = mean(unit_level_preds)) |>
     ungroup()
 
   return(list(lmer = lmer_nz, glmer = glmer_z, pred = zi_domain_preds))

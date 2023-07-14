@@ -20,14 +20,9 @@
 #'
 #' The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
 #' as well as the predictor variables for the function to work.
-
-
+#' @export
 unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, domain_level = "COUNTYFIPS",
                     B = 100, mse_est = F, boot_type = "parametric"){
-
-  source("R/fit_zi.r")
-  source("R/mse_coefs.r")
-  source("R/boot_rep.r")
 
   slice_samp <- function(.data, n, replace = TRUE) {
     dplyr::slice_sample(.data = .data, n = n, replace = replace)
