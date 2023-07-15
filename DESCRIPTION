@@ -23,5 +23,6 @@ Imports:
     purrr,
     foreach, 
     doFuture,
-    progressr
+    progressr, 
+    furrr
 RoxygenNote: 7.2.3
