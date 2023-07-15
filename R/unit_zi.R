@@ -146,7 +146,8 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
         p()
         boot_rep(boot_pop_data, samp_dat, domain_level,
                  boot_lin_formula, boot_log_formula)
-      })
+      },
+      .options = furrr::furrr_options(seed = TRUE))
     }
 
     progressr::with_progress({
