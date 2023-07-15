@@ -74,7 +74,7 @@ t2 - t1
 #furrr, loaded future cores 56.38872, 59.54396, 53.96114
 #furrrr, loaded regular core stuff : 55.30214, 56.5665
 #furrr, loaded regular core plus progress bar: 1.007585, 57.53013
-#furrr, future cores plus progres bar: 56.21319
+#furrr, future cores plus progres bar: 56.21319, 54.7398
 
 ```
 
