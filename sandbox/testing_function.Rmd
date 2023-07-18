@@ -21,15 +21,15 @@ library(parallel)
 # doParallel::registerDoParallel(cl)
 
 library(foreach)
-future::plan("multisession", workers = 4)
+future::plan("multisession", workers = 8)
 
 ```
 
 
 ```{r}
 
-pop_dat <- readRDS("/Users/dinan_elsyad/Desktop/summer research/sim-studies/sandbox/sim_samp.rds")
-#pop_dat <- readRDS("/home/grayson/Documents/UFDS2023/sim-studies/sandbox/sim_samp.rds")
+#pop_dat <- readRDS("/Users/dinan_elsyad/Desktop/summer research/sim-studies/sandbox/sim_samp.rds")
+pop_dat <- readRDS("/home/grayson/Documents/UFDS2023/sim-studies/sandbox/sim_samp.rds")
 
 counties <- unique(pop_dat$DOMAIN)
 
