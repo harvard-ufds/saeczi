@@ -11,7 +11,8 @@ unit_zi(
   log_formula = lin_formula,
   domain_level = "COUNTYFIPS",
   B = 100,
-  mse_est = F,
+  mse_est = FALSE,
+  parallel = TRUE,
   boot_type = "parametric"
 )
 }
@@ -29,6 +30,8 @@ unit_zi(
 \item{B}{An integer of the number of reps desired for the bootstrap}
 
 \item{mse_est}{A boolean that specifies if the user}
+
+\item{parallel}{Compute MSE estimation in parallel}
 
 \item{boot_type}{IDK}
 }

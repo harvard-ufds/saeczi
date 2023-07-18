@@ -13,6 +13,7 @@
 #' @param domain_level A string of the column name in the dataframes that reflect the domain level
 #' @param B An integer of the number of reps desired for the bootstrap
 #' @param mse_est A boolean that specifies if the user
+#' @param parallel Compute MSE estimation in parallel
 #' @param boot_type IDK
 #'
 #' @details The arguments `lin_formula`, and `log_formula`
@@ -31,7 +32,8 @@ unit_zi <- function(samp_dat,
                     log_formula = lin_formula,
                     domain_level = "COUNTYFIPS",
                     B = 100,
-                    mse_est = F,
+                    mse_est = FALSE,
+                    parallel = TRUE,
                     boot_type = "parametric") {
 
   if(!("formula" %in% class(lin_formula))) {
@@ -139,17 +141,24 @@ unit_zi <- function(samp_dat,
 
 
     # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x) {
+    boot_rep_with_progress_bar <- function(x, parallel = parallel) {
       
       p <- progressor(steps = length(x))
-
-      x |> future_map_dfr( ~{
-        p()
-        boot_rep(boot_pop_data, samp_dat, domain_level,
-                 boot_lin_formula, boot_log_formula)
-      },
-      .options = furrr_options(seed = TRUE))
       
+      if (parallel) {
+        x |> future_map_dfr( ~{
+          p()
+          boot_rep(boot_pop_data, samp_dat, domain_level,
+                   boot_lin_formula, boot_log_formula)
+        },
+        .options = furrr_options(seed = TRUE)) 
+      } else {
+        x |> purrr::map_dfr( ~{
+          p()
+          boot_rep(boot_pop_data, samp_dat, domain_level,
+                   boot_lin_formula, boot_log_formula)
+        }) 
+      }
     }
 
     with_progress({
