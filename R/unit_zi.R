@@ -20,17 +20,27 @@
 #'
 #' The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
 #' as well as the predictor variables for the function to work.
-#' @export
-unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, domain_level = "COUNTYFIPS",
-                    B = 100, mse_est = F, boot_type = "parametric"){
+#' @export unit_zi
+#' @import stats
+#' @importFrom progressr progressor with_progress
+#' @importFrom furrr future_map_dfr furrr_options
+
+unit_zi <- function(samp_dat,
+                    pop_dat,
+                    lin_formula,
+                    log_formula = lin_formula,
+                    domain_level = "COUNTYFIPS",
+                    B = 100,
+                    mse_est = F,
+                    boot_type = "parametric") {
 
   if(!("formula" %in% class(lin_formula))) {
-    lin_formula <- stats::as.formula(lin_formula)
+    lin_formula <- as.formula(lin_formula)
     message("lin_formula was converted to class 'formula'")
   }
 
   if(!("formula" %in% class(log_formula))) {
-    log_formula <- stats::as.formula(log_formula)
+    log_formula <- as.formula(log_formula)
     message("log_formula was converted to class 'formula'")
   }
 
@@ -44,7 +54,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
   #R2 <- r.squaredGLMM(original_pred$lmer)[1]
   R2 <- 0
 
-  if (mse_est == T & boot_type == "parametric") {
+  if (mse_est == T && boot_type == "parametric") {
 
     # MSE estimation -------------------------------------------------------------
     zi_model_coefs <- mse_coefs(original_pred$lmer, original_pred$glmer)
@@ -55,21 +65,20 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     joined_pop_bi <- merge(x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
                            y = params_and_domain, by = "dom", all.x = TRUE)
 
-
-    x_log_matrix <- stats::model.matrix(
-      stats::as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
+    x_log_matrix <- model.matrix(
+      as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
       data = pop_dat[ , log_X, drop = F]
     )
 
-    x_lin_matrix <- stats::model.matrix(
-      stats::as.formula(paste0(" ~ ", paste(lin_X, collapse = " + "))),
+    x_lin_matrix <- model.matrix(
+      as.formula(paste0(" ~ ", paste(lin_X, collapse = " + "))),
       data = pop_dat[ , lin_X, drop = F]
     )
 
     # generating random errors
     individual_random_errors <- data.frame(
       dom = pop_dat[ , domain_level, drop = T],
-      individual_random_errors = stats::rnorm(
+      individual_random_errors = rnorm(
         n = length(pop_dat[ , domain_level, drop = T]),
         mean = 0,
         sd = sqrt(zi_model_coefs$sig2_eps_hat)
@@ -78,7 +87,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
 
     area_random_errors <- data.frame(
       dom = zi_model_coefs$domain_levels,
-      area_random_errors = stats::rnorm(
+      area_random_errors = rnorm(
         length(zi_model_coefs$domain_levels),
         mean = 0,
         sd = sqrt(zi_model_coefs$sig2_mu_hat)
@@ -92,7 +101,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
       (1 + exp(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i))
 
     # Generate corresponding deltas
-    delta_i_star <- stats::rbinom(length(p_hat_i), 1, p_hat_i)
+    delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
 
     boot_data_generation_params <- list(random_effects = random_effects,
                                         p_hat_i = p_hat_i,
@@ -113,7 +122,7 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     )
 
     # domain level estimates for bootstrap population data
-    boot_pop_param <- stats::setNames(stats::aggregate(response ~ domain,
+    boot_pop_param <- setNames(aggregate(response ~ domain,
               data = boot_pop_data,
               FUN = mean), c("domain", "domain_est"))
 
@@ -125,10 +134,32 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     boot_pop_data <- cbind(pop_dat, boot_pop_data)
 
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
-    boot_lin_formula <- stats::as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
-    boot_log_formula <- stats::as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
+    boot_lin_formula <- as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
+    boot_log_formula <- as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
 
 
+    # furrr with progress bar
+    boot_rep_with_progress_bar <- function(x) {
+      
+      p <- progressor(steps = length(x))
+
+      x |> future_map_dfr( ~{
+        p()
+        boot_rep(boot_pop_data, samp_dat, domain_level,
+                 boot_lin_formula, boot_log_formula)
+      },
+      .options = furrr_options(seed = TRUE))
+      
+    }
+
+    with_progress({
+      mse_df <- boot_rep_with_progress_bar(1:B)
+    })
+
+    # furrr without progress bar
+    # mse_df <- 1:B |>
+    #   furrr::future_map_dfr(~ boot_rep(boot_pop_data, samp_dat, domain_level,
+    #                         boot_lin_formula, boot_log_formula))
 
     ########foreach and dopar
     # mse_df <-  foreach::foreach(i = 1:B,
@@ -137,57 +168,26 @@ unit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula = lin_formula, d
     #                   }
 
 
-
-    # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x) {
-      p <- progressr::progressor(steps = length(x))
-
-      x |> furrr::future_map_dfr( ~{
-        p()
-        boot_rep(boot_pop_data, samp_dat, domain_level,
-                 boot_lin_formula, boot_log_formula)
-      },
-      .options = furrr::furrr_options(seed = TRUE))
-    }
-
-    progressr::with_progress({
-      mse_df <- boot_rep_with_progress_bar(1:B)
-    })
-
-
-    ######### doesnt work
-    # progressr::with_progress({
-    #   p <- progressr::progressor(steps = length(1:B))
-    #
-    #   mse_df <- 1:B |>
-    #     furrr::future_map_dfr(~ boot_rep(boot_pop_data, samp_dat, domain_level,
-    #                                      boot_lin_formula, boot_log_formula), p = p)
-    # })
-
-
-    # furrr without progress bar
-    # mse_df <- 1:B |>
-    #   furrr::future_map_dfr(~ boot_rep(boot_pop_data, samp_dat, domain_level,
-    #                         boot_lin_formula, boot_log_formula))
-
-
-    final_df <- stats::setNames(stats::aggregate(sq_error ~ domain,
-                                          data = mse_df,
-                                          FUN = function(x) sum(x)/B), c("domain", "mse"))
+    final_df <- setNames(aggregate(sq_error ~ domain,
+                                   data = mse_df,
+                                   FUN = function(x) sum(x)/B), c("domain", "mse"))
 
     final_df <- merge(x = final_df, y = original_pred$pred, by = "domain", all.x = TRUE)
 
-    final_df <- stats::setNames(final_df[ ,c("domain", "mse", "Y_hat_j")], c("domain", "mse", "est"))
+    final_df <- setNames(final_df[ ,c("domain", "mse", "Y_hat_j")], c("domain", "mse", "est"))
 
   } else if (mse_est == T & boot_type == "vanilla") {
 
     ############# to do
 
-  }
-  else {
+  } else {
+    
     final_df <- original_pred$pred
+    
   }
 
-  return(list(final_df, original_pred$lmer, original_pred$glmer))
+  return(list(final_df,
+              original_pred$lmer,
+              original_pred$glmer))
 
 }
