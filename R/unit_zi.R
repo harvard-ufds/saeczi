@@ -141,24 +141,24 @@ unit_zi <- function(samp_dat,
 
 
     # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x, parallel = parallel) {
-      
+    boot_rep_with_progress_bar <- function(x) {
+
       p <- progressor(steps = length(x))
-      
-      if (parallel) {
+
+      # if (parallel) {
         x |> future_map_dfr( ~{
           p()
           boot_rep(boot_pop_data, samp_dat, domain_level,
                    boot_lin_formula, boot_log_formula)
         },
-        .options = furrr_options(seed = TRUE)) 
-      } else {
-        x |> purrr::map_dfr( ~{
-          p()
-          boot_rep(boot_pop_data, samp_dat, domain_level,
-                   boot_lin_formula, boot_log_formula)
-        }) 
-      }
+        .options = furrr_options(seed = TRUE))
+      # } else {
+      #   x |> purrr::map_dfr( ~{
+      #     p()
+      #     boot_rep(boot_pop_data, samp_dat, domain_level,
+      #              boot_lin_formula, boot_log_formula)
+      #   })
+      # }
     }
 
     with_progress({
@@ -190,9 +190,9 @@ unit_zi <- function(samp_dat,
     ############# to do
 
   } else {
-    
+
     final_df <- original_pred$pred
-    
+
   }
 
   return(list(final_df,
