@@ -145,27 +145,27 @@ unit_zi <- function(samp_dat,
 
       p <- progressor(steps = length(x))
 
-      # if (parallel) {
+       if (parallel) {
         x |> future_map_dfr( ~{
           p()
           boot_rep(boot_pop_data, samp_dat, domain_level,
                    boot_lin_formula, boot_log_formula)
         },
         .options = furrr_options(seed = TRUE))
-      # } else {
-      #   x |> purrr::map_dfr( ~{
-      #     p()
-      #     boot_rep(boot_pop_data, samp_dat, domain_level,
-      #              boot_lin_formula, boot_log_formula)
-      #   })
-      # }
+      } else {
+        x |> purrr::map_dfr( ~{
+          p()
+          boot_rep(boot_pop_data, samp_dat, domain_level,
+                   boot_lin_formula, boot_log_formula)
+        })
+      }
     }
 
     with_progress({
       mse_df <- boot_rep_with_progress_bar(1:B)
     })
 
-    # furrr without progress bar
+    #furrr without progress bar
     # mse_df <- 1:B |>
     #   furrr::future_map_dfr(~ boot_rep(boot_pop_data, samp_dat, domain_level,
     #                         boot_lin_formula, boot_log_formula))
