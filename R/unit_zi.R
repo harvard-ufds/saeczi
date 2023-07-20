@@ -25,6 +25,7 @@
 #' @import stats
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map_dfr furrr_options
+#' @importFrom purrr map_dfr
 
 unit_zi <- function(samp_dat,
                     pop_dat,
@@ -52,9 +53,6 @@ unit_zi <- function(samp_dat,
   log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
 
   original_pred <- fit_zi(samp_dat, pop_dat, lin_formula, log_formula, domain_level)
-
-  #R2 <- r.squaredGLMM(original_pred$lmer)[1]
-  R2 <- 0
 
   if (mse_est == T && boot_type == "parametric") {
 
@@ -153,7 +151,7 @@ unit_zi <- function(samp_dat,
         },
         .options = furrr_options(seed = TRUE))
       } else {
-        x |> purrr::map_dfr( ~{
+        x |> map_dfr( ~{
           p()
           boot_rep(boot_pop_data, samp_dat, domain_level,
                    boot_lin_formula, boot_log_formula)
@@ -164,18 +162,6 @@ unit_zi <- function(samp_dat,
     with_progress({
       mse_df <- boot_rep_with_progress_bar(1:B)
     })
-
-    #furrr without progress bar
-    # mse_df <- 1:B |>
-    #   furrr::future_map_dfr(~ boot_rep(boot_pop_data, samp_dat, domain_level,
-    #                         boot_lin_formula, boot_log_formula))
-
-    ########foreach and dopar
-    # mse_df <-  foreach::foreach(i = 1:B,
-    #                   .combine = 'rbind') %dopar% {
-    #                     boot_rep(boot_pop_data, samp_dat, domain_level, boot_lin_formula, boot_log_formula)
-    #                   }
-
 
     final_df <- setNames(aggregate(sq_error ~ domain,
                                    data = mse_df,
