@@ -1,31 +1,13 @@
-library(tidyverse)
-library(dplyr)
 library(saezi)
 library(testthat)
-future::plan("multisession", workers = 4)
 
-# plots <- readRDS("../zero-inflation-mse/Oregon/tsumdatp.rds")
-# aux <- readRDS("../zero-inflation-mse/Oregon/pltassgn.rds")
-
-dat <- readRDS("../zero-inflation-mse.nosync/data/ID.rds")
-
-plots <- dat[[1]]
-aux <- dat[[2]]
+data(pop)
+data(samp)
 
 
+lin_formula <- DRYBIO_AG_TPA_live_ADJ ~ tcc16 + tmean + tri
 
-plots <- plots %>% 
-  select("CN", "DRYBIO_AG_TPA_live_ADJ_TONS")
-
-pop <- left_join(aux, plots, by = c("PLT_CN" ="CN"))
-
-samp <- pop %>%
-  group_by(COUNTYFIPS) %>%
-  slice_sample(prop = 0.15, replace = FALSE)
-
-lin_formula <- DRYBIO_AG_TPA_live_ADJ_TONS ~ tcc16 + tmean + tri
-
-result <- unit_zi(samp, pop, lin_formula, domain_level = "COUNTYFIPS", B = 123, mse_est = TRUE, parallel = FALSE)
+result <- unit_zi(samp, pop, lin_formula, domain_level = "COUNTYFIPS", mse_est = TRUE, parallel = FALSE)
 
 test_that("result is a list", {
   expect_type(result, "list")
