@@ -14,31 +14,29 @@ knitr::opts_chunk$set(
 
 # Development Mode
 
-saezi is still under development.  Please use at your own risk!  
+saeczi is still under development.  Please use at your own risk!  
 
-# saezi
+# saeczi
 
-saezi is an R package that allows for the fitting of a zero-inflation estimator onto a sample dataset. Please note that, in order for a dataset to compatible with the zero-inflation estimator, the dataset must be of a sample dataset, where the means at the domain level of what would be considered a "population" dataset for the auxiliary variables must be available. To fit the zero-inflation estimator,first analyze the sample data and find a set of auxiliary variables that create a good model for both the linear regression model, as well as the logistic regression model. Lastly, assess the number of repetitions desired when fitting the bootstrap sample to estimate the variance. Once all of those things are decided, the unit_zi function can be used to predict domain level estimates of a sample dataset. 
+saeczi is an R package that allows for the fitting of a zero-inflation estimator onto a sample dataset. Please note that, in order for a dataset to compatible with the zero-inflation estimator, the dataset must be of a sample dataset, where the means at the domain level of what would be considered a "population" dataset for the auxiliary variables must be available. To fit the zero-inflation estimator,first analyze the sample data and find a set of auxiliary variables that create a good model for both the linear regression model, as well as the logistic regression model. Lastly, assess the number of repetitions desired when fitting the bootstrap sample to estimate the variance. Once all of those things are decided, the unit_zi function can be used to predict domain level estimates of a sample dataset. 
 
 ## Installation
 
 You can install saezi from github with:
 
 ```{r gh-installation, eval = FALSE}
-# install.packages("devtools")
-#devtools::install_github("saezi/saezi")
+install.packages("devtools")
+devtools::install_github("harvard-ufds/saeczi")
 ```
 
 ## Example
 
-Here's an example of fitting the Horvitz-Thompson estimator:
+Here's an example of fitting the zero-inflation estimator:
 
 ```{r example}
 
-#library(saezi)
+library(saeczi)
 
-## Estimates the mean and total of the api00 variable using the apisrs dataset in the survey package
-#library(survey)
-#data(api)
-#horvitzThompson(y = apisrs$api00, pi = apisrs$pw^(-1), var_est = TRUE, var_method = "lin_HTSRS")
+## Estimates the mean and mse of the dry biomass variable per county using the public dataset for these variables in the state of _____
+unit_zi(samp_dat = samp, pop_dat = pop, lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16, log_formula = DRYBIO_AG_TPA_live_ADJ ~ elev, domain_level = "COUNTYFIPS", mse_est = TRUE)
 ```
