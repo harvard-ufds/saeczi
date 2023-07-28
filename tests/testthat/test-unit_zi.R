@@ -1,4 +1,4 @@
-library(saezi)
+library(saeczi)
 library(testthat)
 
 data(pop)

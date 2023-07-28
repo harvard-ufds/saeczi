@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(saezi)
+library(saeczi)
 
-test_check("saezi")
+test_check("saeczi")
