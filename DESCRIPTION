@@ -1,6 +1,6 @@
 Package: saeczi
 Type: Package
-Title: Small Area Estimation using Zero Inflation Estimator
+Title: Small Area Estimation for Continuous Zero Inflated Data
 Version: 0.1.0
 Authors@R: c(person("Dinan", "Elsyad", role = c("aut", "cre"),
                     email = "dinanelsyad@college.harvard.edu"),
