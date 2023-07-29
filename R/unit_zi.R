@@ -106,6 +106,9 @@ unit_zi <- function(samp_dat,
     boot_data_generation_params <- list(random_effects = random_effects,
                                         p_hat_i = p_hat_i,
                                         delta_i_star = delta_i_star)
+    
+    # remove columns if lme4 removes them in the initial fitting process
+    x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_pred$lmer))]
 
     linear_preds <- x_lin_matrix %*% zi_model_coefs$beta_hat +
       boot_data_generation_params$random_effects$area_random_errors +
