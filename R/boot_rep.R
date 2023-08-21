@@ -7,17 +7,33 @@ boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_lo
 
   num_domains <- length(by_domains)
   num_plots <- data.frame(table(samp_dat[ ,domain_level]))
-  #boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
-  boot_data <- samp_by_domain(by_domains, num_plots$Freq)
-
+  boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
+  #boot_data <- samp_by_domain(by_domains, num_plots$Freq)
+  
+  # make this tryCatch recursive
+  fit_zi_tc <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
+    return(
+      tryCatch(
+        {
+          fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+        },
+        error = function(cond) {
+          boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
+          #boot_data <- samp_by_domain(by_domains, num_plots$Freq)
+          fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+        }
+      )
+    )
+  }
+  
   boot_samp_fit  <- tryCatch(
     {
-      fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+      fit_zi_tc(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
     },
     error = function(cond) {
-      #boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
-      boot_data <- samp_by_domain(by_domains, num_plots$Freq)
-      fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+      boot_data <- purrr::map2_dfr(.x = by_domains, .y = num_plots$Freq, slice_samp)
+      #boot_data <- samp_by_domain(by_domains, num_plots$Freq)
+      fit_zi_tc(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
     }
   )
 
