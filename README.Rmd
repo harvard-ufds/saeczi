@@ -12,6 +12,12 @@ knitr::opts_chunk$set(
 )
 ```
 
+# saeczi
+
+ <!-- badges: start -->
+  [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
+  <!-- badges: end -->
+
 # Development Mode
 
 saeczi is still under development.  Please use at your own risk!  
@@ -29,14 +35,3 @@ install.packages("devtools")
 devtools::install_github("harvard-ufds/saeczi")
 ```
 
-## Example
-
-Here's an example of fitting the zero-inflation estimator:
-
-```{r example}
-
-library(saeczi)
-
-## Estimates the mean and mse of the dry biomass variable per county using the public dataset for these variables in the state of _____
-unit_zi(samp_dat = samp, pop_dat = pop, lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16, log_formula = DRYBIO_AG_TPA_live_ADJ ~ elev, domain_level = "COUNTYFIPS", mse_est = TRUE)
-```

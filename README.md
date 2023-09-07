@@ -1,13 +1,19 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# saeczi
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 # Development Mode
 
-saezi is still under development. Please use at your own risk!
+saeczi is still under development. Please use at your own risk!
 
-# saezi
+# saeczi
 
-saezi is an R package that allows for the fitting of a zero-inflation
+saeczi is an R package that allows for the fitting of a zero-inflation
 estimator onto a sample dataset. Please note that, in order for a
 dataset to compatible with the zero-inflation estimator, the dataset
 must be of a sample dataset, where the means at the domain level of what
@@ -25,19 +31,6 @@ level estimates of a sample dataset.
 You can install saezi from github with:
 
 ``` r
-# install.packages("devtools")
-#devtools::install_github("saezi/saezi")
-```
-
-## Example
-
-Here’s an example of fitting the Horvitz-Thompson estimator:
-
-``` r
-#library(saezi)
-
-## Estimates the mean and total of the api00 variable using the apisrs dataset in the survey package
-#library(survey)
-#data(api)
-#horvitzThompson(y = apisrs$api00, pi = apisrs$pw^(-1), var_est = TRUE, var_method = "lin_HTSRS")
+install.packages("devtools")
+devtools::install_github("harvard-ufds/saeczi")
 ```
