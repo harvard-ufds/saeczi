@@ -14,7 +14,6 @@
 #' @param B An integer of the number of reps desired for the bootstrap
 #' @param mse_est A boolean that specifies if the user
 #' @param parallel Compute MSE estimation in parallel
-#' @param boot_type IDK
 #'
 #' @details The arguments `lin_formula`, and `log_formula`
 #' can be unquoted or quoted. The function can handle both forms.
@@ -34,8 +33,7 @@ unit_zi <- function(samp_dat,
                     domain_level = "COUNTYFIPS",
                     B = 100,
                     mse_est = FALSE,
-                    parallel = TRUE,
-                    boot_type = "parametric") {
+                    parallel = FALSE) {
 
   if(!("formula" %in% class(lin_formula))) {
     lin_formula <- as.formula(lin_formula)
@@ -54,7 +52,7 @@ unit_zi <- function(samp_dat,
 
   original_pred <- fit_zi(samp_dat, pop_dat, lin_formula, log_formula, domain_level)
 
-  if (mse_est == T && boot_type == "parametric") {
+  if (mse_est == T) {
 
     # MSE estimation -------------------------------------------------------------
     zi_model_coefs <- mse_coefs(original_pred$lmer, original_pred$glmer)
@@ -129,8 +127,6 @@ unit_zi <- function(samp_dat,
               data = boot_pop_data,
               FUN = mean), c("domain", "domain_est"))
 
-    #diff <- boot_pop_param$domain_est - truth$biomass
-
 
     ## bootstrapping -------------------------------------------------------------
 
@@ -173,10 +169,6 @@ unit_zi <- function(samp_dat,
     final_df <- merge(x = final_df, y = original_pred$pred, by = "domain", all.x = TRUE)
 
     final_df <- setNames(final_df[ ,c("domain", "mse", "Y_hat_j")], c("domain", "mse", "est"))
-
-  } else if (mse_est == T & boot_type == "vanilla") {
-
-    ############# to do
 
   } else {
 
