@@ -45,6 +45,11 @@ unit_zi <- function(samp_dat,
     log_formula <- as.formula(log_formula)
     message("log_formula was converted to class 'formula'")
   }
+  
+  if (parallel && is(future::plan(), "sequential")) {
+    warning("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
+    message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
+  }
 
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
@@ -142,25 +147,17 @@ unit_zi <- function(samp_dat,
     boot_rep_with_progress_bar <- function(x) {
 
       p <- progressor(steps = length(x))
-
-       if (parallel) {
-         if (is(future::plan(), "sequential")) {
-           print("In order for the internal processes to be run in parallel a `plan()` must be specified by the user")
-         }
-         res <- x |> future_map( ~{
-           p()
-           boot_rep(boot_pop_data, samp_dat, domain_level,
-                    boot_lin_formula, boot_log_formula)
+      
+      # no longer need the parallel argument since future_map will run sequentially if a plan is not specified
+      res <- x |> future_map( ~{
+        p()
+        boot_rep(boot_pop_data, samp_dat, domain_level,
+                 boot_lin_formula, boot_log_formula)
         },
         .options = furrr_options(seed = TRUE))
-      } else {
-         res <- x |> map( ~{
-           p()
-           boot_rep(boot_pop_data, samp_dat, domain_level,
-                    boot_lin_formula, boot_log_formula)
-        })
-      }
+    
       res_df <- do.call("rbind", res)
+      
     }
 
     with_progress({
