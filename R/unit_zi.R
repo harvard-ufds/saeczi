@@ -23,8 +23,9 @@
 #' @export unit_zi
 #' @import stats
 #' @importFrom progressr progressor with_progress
-#' @importFrom furrr future_map furrr_options
+#' @importFrom furrr future_map furrr_options 
 #' @importFrom purrr map
+#' @importFrom methods is
 
 unit_zi <- function(samp_dat,
                     pop_dat,
@@ -143,17 +144,20 @@ unit_zi <- function(samp_dat,
       p <- progressor(steps = length(x))
 
        if (parallel) {
-        res <- x |> future_map( ~{
-          p()
-          boot_rep(boot_pop_data, samp_dat, domain_level,
-                   boot_lin_formula, boot_log_formula)
+         if (is(future::plan(), "sequential")) {
+           print("In order for the internal processes to be run in parallel a `plan()` must be specified by the user")
+         }
+         res <- x |> future_map( ~{
+           p()
+           boot_rep(boot_pop_data, samp_dat, domain_level,
+                    boot_lin_formula, boot_log_formula)
         },
         .options = furrr_options(seed = TRUE))
       } else {
-        res <- x |> map( ~{
-          p()
-          boot_rep(boot_pop_data, samp_dat, domain_level,
-                   boot_lin_formula, boot_log_formula)
+         res <- x |> map( ~{
+           p()
+           boot_rep(boot_pop_data, samp_dat, domain_level,
+                    boot_lin_formula, boot_log_formula)
         })
       }
       res_df <- do.call("rbind", res)
@@ -177,8 +181,13 @@ unit_zi <- function(samp_dat,
 
   }
 
-  return(list(final_df,
+  out <- list(final_df,
               original_pred$lmer,
-              original_pred$glmer))
+              original_pred$glmer)
+  
+  structure(out, class = "zi_mod")
 
 }
+
+
+

@@ -22,7 +22,9 @@ Imports:
     lme4,
     purrr,
     progressr, 
-    furrr
+    furrr,
+    future,
+    methods
 RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
