@@ -23,8 +23,8 @@
 #' @export unit_zi
 #' @import stats
 #' @importFrom progressr progressor with_progress
-#' @importFrom furrr future_map_dfr furrr_options
-#' @importFrom purrr map_dfr
+#' @importFrom furrr future_map furrr_options
+#' @importFrom purrr map
 
 unit_zi <- function(samp_dat,
                     pop_dat,
@@ -143,19 +143,20 @@ unit_zi <- function(samp_dat,
       p <- progressor(steps = length(x))
 
        if (parallel) {
-        x |> future_map_dfr( ~{
+        res <- x |> future_map( ~{
           p()
           boot_rep(boot_pop_data, samp_dat, domain_level,
                    boot_lin_formula, boot_log_formula)
         },
         .options = furrr_options(seed = TRUE))
       } else {
-        x |> map_dfr( ~{
+        res <- x |> map( ~{
           p()
           boot_rep(boot_pop_data, samp_dat, domain_level,
                    boot_lin_formula, boot_log_formula)
         })
       }
+      res_df <- do.call("rbind", res)
     }
 
     with_progress({

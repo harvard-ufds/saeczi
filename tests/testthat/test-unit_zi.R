@@ -1,5 +1,4 @@
 library(saeczi)
-library(testthat)
 
 data(pop)
 data(samp)

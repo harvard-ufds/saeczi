@@ -12,8 +12,7 @@ unit_zi(
   domain_level = "COUNTYFIPS",
   B = 100,
   mse_est = FALSE,
-  parallel = TRUE,
-  boot_type = "parametric"
+  parallel = FALSE
 )
 }
 \arguments{
@@ -32,8 +31,6 @@ unit_zi(
 \item{mse_est}{A boolean that specifies if the user}
 
 \item{parallel}{Compute MSE estimation in parallel}
-
-\item{boot_type}{IDK}
 }
 \description{
 Calculate the domain predictions using the zero-inflation estimator, and outputs
