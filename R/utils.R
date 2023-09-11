@@ -35,7 +35,7 @@ fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
   )
   
   lin_pred <- stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE)
-  log_pred <- stats::predict(glmer_z, pop_dat, type = "response")
+  log_pred <- stats::predict(glmer_z, pop_dat, type = "response", allow.new.levels = TRUE)
   
   unit_level_preds <- lin_pred*log_pred
   
