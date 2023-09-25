@@ -2,14 +2,14 @@
 #'
 #' Calculate the domain predictions using the zero-inflation estimator, and outputs
 #' those domain-level predictions, in the form of a dataframe. It contains
-#' the estiamtes for each domain, as well as the mean squared error estimates should
+#' the estimates for each domain, as well as the mean squared error estimates should
 #' the user choose. The output of the function is a list, with the first item being
 #' said dataframe, and the second being the R squared value of the model.
 #'
 #' @param samp_dat A dataframe with domains, predictor variables, and the response variable of a sample
 #' @param pop_dat A dataframe with domains and predictor variables of a population
-#' @param lin_formula A string of the formula for the linear regression model
-#' @param log_formula A string of the formula for the logistic regression model
+#' @param lin_formula model formula for the linear regression model
+#' @param log_formula model formula for the logistic regression model
 #' @param domain_level A string of the column name in the dataframes that reflect the domain level
 #' @param B An integer of the number of reps desired for the bootstrap
 #' @param mse_est A boolean that specifies if the user
@@ -53,21 +53,44 @@ unit_zi <- function(samp_dat,
 
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
-  lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
-  log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
+  
+  lin_X <- unlist(str_extract_all_base(
+    deparse(lin_formula[[3]]),
+    "\\w+"
+  ))
+  
+  log_X <- unlist(str_extract_all_base(
+    deparse(log_formula[[3]]),
+    "\\w+"
+  ))
 
-  original_pred <- fit_zi(samp_dat, pop_dat, lin_formula, log_formula, domain_level)
+  original_pred <- fit_zi(
+    samp_dat,
+    pop_dat,
+    lin_formula,
+    log_formula,
+    domain_level
+  )
 
   if (mse_est == T) {
 
     # MSE estimation -------------------------------------------------------------
-    zi_model_coefs <- mse_coefs(original_pred$lmer, original_pred$glmer)
+    zi_model_coefs <- mse_coefs(
+      original_pred$lmer,
+      original_pred$glmer
+    )
 
-    params_and_domain <- data.frame(dom = zi_model_coefs$domain_levels,
-                                    b_i = zi_model_coefs$b_i)
+    params_and_domain <- data.frame(
+      dom = zi_model_coefs$domain_levels,
+      b_i = zi_model_coefs$b_i
+    )
 
-    joined_pop_bi <- merge(x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
-                           y = params_and_domain, by = "dom", all.x = TRUE)
+    joined_pop_bi <- merge(
+      x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
+      y = params_and_domain,
+      by = "dom",
+      all.x = TRUE
+    )
 
     x_log_matrix <- model.matrix(
       as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
@@ -98,7 +121,12 @@ unit_zi <- function(samp_dat,
       )
     )
 
-    random_effects <- merge(x = individual_random_errors, y = area_random_errors, by = "dom", all.x = TRUE)
+    random_effects <- merge(
+      x = individual_random_errors,
+      y = area_random_errors,
+      by = "dom",
+      all.x = TRUE
+    )
 
     # predict probability of non-zeros
     p_hat_i <- exp(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)/
@@ -107,9 +135,11 @@ unit_zi <- function(samp_dat,
     # Generate corresponding deltas
     delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
 
-    boot_data_generation_params <- list(random_effects = random_effects,
-                                        p_hat_i = p_hat_i,
-                                        delta_i_star = delta_i_star)
+    boot_data_generation_params <- list(
+      random_effects = random_effects,
+      p_hat_i = p_hat_i,
+      delta_i_star = delta_i_star
+    )
     
     # remove columns if lme4 removes them in the initial fitting process
     x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_pred$lmer))]
@@ -129,9 +159,14 @@ unit_zi <- function(samp_dat,
     )
 
     # domain level estimates for bootstrap population data
-    boot_pop_param <- setNames(aggregate(response ~ domain,
-              data = boot_pop_data,
-              FUN = mean), c("domain", "domain_est"))
+    boot_pop_param <- setNames(
+      aggregate(
+        response ~ domain,
+        data = boot_pop_data,
+        FUN = mean
+      ),
+      c("domain", "domain_est")
+    )
 
 
     ## bootstrapping -------------------------------------------------------------
@@ -139,20 +174,34 @@ unit_zi <- function(samp_dat,
     boot_pop_data <- cbind(pop_dat, boot_pop_data)
 
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
-    boot_lin_formula <- as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
-    boot_log_formula <- as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
-
+    boot_lin_formula <- as.formula(
+      paste0(
+        "response ~ ",
+        paste(lin_X, collapse = " + ")
+      )
+    )
+    
+    boot_log_formula <- as.formula(
+      paste0(
+        "response ~ ",
+        paste(log_X, collapse = " + ")
+      )
+    )
 
     # furrr with progress bar
     boot_rep_with_progress_bar <- function(x) {
 
       p <- progressor(steps = length(x))
-      
-      # no longer need the parallel argument since future_map will run sequentially if a plan is not specified
+
       res <- x |> future_map( ~{
         p()
-        boot_rep(boot_pop_data, samp_dat, domain_level,
-                 boot_lin_formula, boot_log_formula)
+        boot_rep(
+          boot_pop_data,
+          samp_dat,
+          domain_level,
+          boot_lin_formula,
+          boot_log_formula
+        )
         },
         .options = furrr_options(seed = TRUE))
     
@@ -164,13 +213,24 @@ unit_zi <- function(samp_dat,
       mse_df <- boot_rep_with_progress_bar(1:B)
     })
 
-    final_df <- setNames(aggregate(sq_error ~ domain,
-                                   data = mse_df,
-                                   FUN = function(x) sum(x)/B), c("domain", "mse"))
+    final_df <- setNames(
+      aggregate(sq_error ~ domain,
+                data = mse_df,
+                FUN = function(x) sum(x)/B),
+      c("domain", "mse")
+      )
 
-    final_df <- merge(x = final_df, y = original_pred$pred, by = "domain", all.x = TRUE)
+    final_df <- merge(
+      x = final_df,
+      y = original_pred$pred,
+      by = "domain",
+      all.x = TRUE
+    )
 
-    final_df <- setNames(final_df[ ,c("domain", "mse", "Y_hat_j")], c("domain", "mse", "est"))
+    final_df <- setNames(
+      final_df[ ,c("domain", "mse", "Y_hat_j")],
+      c("domain", "mse", "est")
+    )
 
   } else {
 
@@ -178,11 +238,16 @@ unit_zi <- function(samp_dat,
 
   }
 
-  out <- list(final_df,
-              original_pred$lmer,
-              original_pred$glmer)
+  out <- list(
+    final_df,
+    original_pred$lmer,
+    original_pred$glmer
+  )
   
-  structure(out, class = "zi_mod")
+  structure(
+    out,
+    class = "zi_mod"
+  )
 
 }
 
