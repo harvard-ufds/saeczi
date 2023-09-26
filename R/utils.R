@@ -145,4 +145,35 @@ mse_coefs <- function(lmer_model, glmer_model) {
 }
 
 
+# console text print helper
+console_cat <- function(x) {
+  
+  if (length(x) > 1) x <- paste(x, collapse = "")
+  w <- options("width")[[1]]
+  if (nchar(x) <= w) return(x)
+  
+  proceed <- TRUE
+  out <- x
+  
+  while (proceed) {
+    
+    cp <- out[length(out)]
+    cp_sub <- substring(cp, 1, w)
+    
+    spId <- gregexpr("\\s", cp_sub)[[1]]
+    stopId <- spId[length(spId) - 1] - 1
+    cp <- c(substring(cp_sub, 1, stopId), substring(cp, stopId + 1))
+    out <-
+      if (length(out) == 1)
+        cp
+    else
+      c(out[1:(length(x) - 1)], cp)
+    
+    if (all(nchar(out) <= w)) proceed <- FALSE
+    
+  }
+  
+  cat(paste(out, collapse = "\n"))
+  
+}
 

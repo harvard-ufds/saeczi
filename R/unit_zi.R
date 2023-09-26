@@ -35,6 +35,8 @@ unit_zi <- function(samp_dat,
                     B = 100,
                     mse_est = FALSE,
                     parallel = FALSE) {
+  
+  funcCall <- match.call() 
 
   if(!("formula" %in% class(lin_formula))) {
     lin_formula <- as.formula(lin_formula)
@@ -73,8 +75,7 @@ unit_zi <- function(samp_dat,
   )
 
   if (mse_est == T) {
-
-    # MSE estimation -------------------------------------------------------------
+    
     zi_model_coefs <- mse_coefs(
       original_pred$lmer,
       original_pred$glmer
@@ -239,17 +240,53 @@ unit_zi <- function(samp_dat,
   }
 
   out <- list(
-    final_df,
-    original_pred$lmer,
-    original_pred$glmer
+    call = funcCall,
+    res = final_df,
+    lin_mod = original_pred$lmer,
+    log_mod = original_pred$glmer
   )
   
-  structure(
-    out,
-    class = "zi_mod"
-  )
+  structure(out, class = "zi_mod")
 
 }
 
+#' @export
+print.zi_mod <- function(obj, ...) {
+  
+  cat("\nCall:\n")
+  console_cat(deparse(obj$call))
+  cat("\n\n")
+  
+  cat("Linear Model: \n")
+  cat("- Fixed effects: \n")
+  print(summary(obj$lin_mod)$coefficients[ ,1])
+  cat("\n")
+  cat("- Random effects: \n")
+  print(summary(obj$lin_mod)$varcor)
+  cat("\n")
+  
+  cat("Logistic Model: \n")
+  cat("- Fixed effects: \n")
+  print(summary(obj$log_mod)$coefficients[ ,1])
+  cat("\n")
+  cat("- Random effects: \n")
+  print(summary(obj$log_mod)$varcor)
+  cat("\n")
+  
+}
+
+#' #' @export
+#' summary.zi_mod <- function(obj, ...) {
+#'   
+#'   
+#'   
+#' }
+#' 
+#' #' @export
+#' print.summary.zi_mod <- function(x, ...) {
+#'   
+#'   
+#'   
+#' }
 
 

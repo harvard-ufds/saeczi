@@ -20,9 +20,9 @@ unit_zi(
 
 \item{pop_dat}{A dataframe with domains and predictor variables of a population}
 
-\item{lin_formula}{A string of the formula for the linear regression model}
+\item{lin_formula}{model formula for the linear regression model}
 
-\item{log_formula}{A string of the formula for the logistic regression model}
+\item{log_formula}{model formula for the logistic regression model}
 
 \item{domain_level}{A string of the column name in the dataframes that reflect the domain level}
 
@@ -35,7 +35,7 @@ unit_zi(
 \description{
 Calculate the domain predictions using the zero-inflation estimator, and outputs
 those domain-level predictions, in the form of a dataframe. It contains
-the estiamtes for each domain, as well as the mean squared error estimates should
+the estimates for each domain, as well as the mean squared error estimates should
 the user choose. The output of the function is a list, with the first item being
 said dataframe, and the second being the R squared value of the model.
 }

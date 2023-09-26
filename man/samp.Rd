@@ -5,7 +5,7 @@
 \alias{samp}
 \title{FIA sample data for Oregon}
 \format{
-An object of class \code{grouped_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 1494 rows and 11 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 1494 rows and 11 columns.
 }
 \usage{
 samp
