@@ -1,6 +1,9 @@
-
 # fit_zi function
-fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
+fit_zi <- function(samp_dat,
+                   pop_dat,
+                   lin_formula,
+                   log_formula,
+                   domain_level) {
   
   Y <- deparse(lin_formula[[2]])
   lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
@@ -35,7 +38,7 @@ fit_zi <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
   )
   
   lin_pred <- stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE)
-  log_pred <- stats::predict(glmer_z, pop_dat, type = "response", allow.new.levels = TRUE)
+  log_pred <- stats::predict(glmer_z, pop_dat, type = "response")
   
   unit_level_preds <- lin_pred*log_pred
   
@@ -65,11 +68,14 @@ str_extract_all_base <- function(string, pattern) {
 
 
 # bootstrap rep helper
-boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_log_formula) {
+boot_rep <- function(pop_boot,
+                     samp_dat,
+                     domain_level,
+                     boot_lin_formula,
+                     boot_log_formula) {
   
   boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = pop_boot,
                                                  FUN = mean), c("domain", "domain_est"))
-  
   
   by_domains <- split(pop_boot, f = pop_boot$domain)
   
@@ -111,6 +117,7 @@ boot_rep <- function(pop_boot, samp_dat, domain_level, boot_lin_formula, boot_lo
   squared_error <- squared_error[ , c("domain", "sq_error")]
   
   return(squared_error)
+  
 }
 
 
@@ -134,6 +141,7 @@ mse_coefs <- function(lmer_model, glmer_model) {
     beta_hat = beta_hat, sig2_mu_hat = sig2_mu_hat,
     sig2_eps_hat = sig2_eps_hat, alpha_1 = alpha_1,
     b_i = b_i, domain_levels = b_domain_levels))
+  
 }
 
 
