@@ -251,26 +251,26 @@ unit_zi <- function(samp_dat,
 }
 
 #' @export
-print.zi_mod <- function(obj, ...) {
+print.zi_mod <- function(x, ...) {
   
   cat("\nCall:\n")
-  console_cat(deparse(obj$call))
+  console_cat(deparse(x$call))
   cat("\n\n")
   
   cat("Linear Model: \n")
   cat("- Fixed effects: \n")
-  print(summary(obj$lin_mod)$coefficients[ ,1])
+  print(summary(x$lin_mod)$coefficients[ ,1])
   cat("\n")
   cat("- Random effects: \n")
-  print(summary(obj$lin_mod)$varcor)
+  print(summary(x$lin_mod)$varcor)
   cat("\n")
   
   cat("Logistic Model: \n")
   cat("- Fixed effects: \n")
-  print(summary(obj$log_mod)$coefficients[ ,1])
+  print(summary(x$log_mod)$coefficients[ ,1])
   cat("\n")
   cat("- Random effects: \n")
-  print(summary(obj$log_mod)$varcor)
+  print(summary(x$log_mod)$varcor)
   cat("\n")
   
 }
