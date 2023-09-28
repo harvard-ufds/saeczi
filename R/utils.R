@@ -72,12 +72,9 @@ boot_rep <- function(pop_boot,
                      samp_dat,
                      domain_level,
                      boot_lin_formula,
-                     boot_log_formula) {
-  
-  boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = pop_boot,
-                                                 FUN = mean), c("domain", "domain_est"))
-  
-  by_domains <- split(pop_boot, f = pop_boot$domain)
+                     boot_log_formula,
+                     boot_truth,
+                     by_domains) {
   
   num_domains <- length(by_domains)
   num_plots <- data.frame(table(samp_dat[ , domain_level]))

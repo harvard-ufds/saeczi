@@ -188,6 +188,11 @@ unit_zi <- function(samp_dat,
         paste(log_X, collapse = " + ")
       )
     )
+    # define these before bootstrap
+    boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
+                                                   FUN = mean), c("domain", "domain_est"))
+    
+    by_domains <- split(boot_pop_data, f = boot_pop_data$domain)
 
     # furrr with progress bar
     boot_rep_with_progress_bar <- function(x) {
@@ -201,7 +206,9 @@ unit_zi <- function(samp_dat,
           samp_dat,
           domain_level,
           boot_lin_formula,
-          boot_log_formula
+          boot_log_formula,
+          boot_truth,
+          by_domains
         )
         },
         .options = furrr_options(seed = TRUE))
