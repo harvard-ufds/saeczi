@@ -33,23 +33,16 @@ fit_zi <- function(samp_dat,
   lmer_nz <- suppressMessages(lme4::lmer(lin_reg_formula, data = nz))
   
   # Fit logistic mixed effects on ALL data
-  glmer_z <- suppressMessages(
-    lme4::glmer(log_reg_formula, data = samp_dat, family = "binomial")
-  )
+  glmer_z <- suppressMessages(lme4::glmer(log_reg_formula, data = samp_dat, family = "binomial"))
   
-  lin_pred <- stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE)
-  log_pred <- stats::predict(glmer_z, pop_dat, type = "response")
+  unit_level_preds <- setNames(
+    stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE) * stats::predict(glmer_z, pop_dat, type = "response"),
+    as.character(pop_dat[ , domain_level, drop = T])
+  ) 
   
-  unit_level_preds <- lin_pred*log_pred
+  zi_domain_preds <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
   
-  # d x 2 dataframe
-  # where d = # of domains
-  zi_domain_preds <- data.frame(
-    domain = pop_dat[ , domain_level, drop = T],
-    unit_level_preds = unit_level_preds)
-  
-  zi_domain_preds <- stats::setNames(stats::aggregate(unit_level_preds ~ domain, data = zi_domain_preds,
-                                                      FUN = mean), c("domain", "Y_hat_j"))
+  names(zi_domain_preds) <- c("domain", "Y_hat_j")
   
   return(list(lmer = lmer_nz, glmer = glmer_z, pred = zi_domain_preds))
   
