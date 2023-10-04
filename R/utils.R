@@ -141,7 +141,9 @@ capture_all <- function(.f){
   
   function(...){
     
-    try_out <- suppressWarnings(try(.f(...), silent = TRUE))
+    try_out <- suppressMessages(suppressWarnings(
+      try(.f(...), silent = TRUE)
+    ))
     
     res <- rlang::try_fetch(
       .f(...),
@@ -168,6 +170,14 @@ capture_all <- function(.f){
   
 }
 
+fm <- function(x) {
+  message("test")
+  x
+}
 
+
+f_m <- capture_all(fm)
+
+f_m(10)
 
 
