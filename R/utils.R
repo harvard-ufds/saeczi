@@ -135,35 +135,39 @@ mse_coefs <- function(lmer_model, glmer_model) {
 }
 
 
-# console text print helper
-console_cat <- function(x) {
+capture_all <- function(.f){
   
-  if (length(x) > 1) x <- paste(x, collapse = "")
-  w <- options("width")[[1]]
-  if (nchar(x) <= w) return(x)
+  .f <- purrr::as_mapper(.f)
   
-  proceed <- TRUE
-  out <- x
-  
-  while (proceed) {
+  function(...){
     
-    cp <- out[length(out)]
-    cp_sub <- substring(cp, 1, w)
+    try_out <- suppressWarnings(try(.f(...), silent = TRUE))
     
-    spId <- gregexpr("\\s", cp_sub)[[1]]
-    stopId <- spId[length(spId) - 1] - 1
-    cp <- c(substring(cp_sub, 1, stopId), substring(cp, stopId + 1))
-    out <-
-      if (length(out) == 1)
-        cp
-    else
-      c(out[1:(length(x) - 1)], cp)
+    res <- rlang::try_fetch(
+      .f(...),
+      error = function(err) err,
+      warning = function(warn) warn,
+      message = function(message) message,
+    )
     
-    if (all(nchar(out) <= w)) proceed <- FALSE
+    out <- list(
+      result = NULL,
+      log = NULL
+    )
+    
+    if("error" %in% class(res)) {
+      stop(res$message)
+    } else {
+      out$result <- try_out
+      out$log <- res$message
+    }
+
+    return(out)
     
   }
   
-  cat(paste(out, collapse = "\n"))
-  
 }
+
+
+
 

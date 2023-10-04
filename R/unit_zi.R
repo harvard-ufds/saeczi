@@ -65,14 +65,20 @@ unit_zi <- function(samp_dat,
     deparse(log_formula[[3]]),
     "\\w+"
   ))
+  
+  # want to capture warnings and messages from original models fit
+  fit_zi_capture <- capture_all(fit_zi)
 
-  original_pred <- fit_zi(
+  original_out <- fit_zi_capture(
     samp_dat,
     pop_dat,
     lin_formula,
     log_formula,
     domain_level
   )
+  
+  original_pred <- original_out$result
+  original_log <- original_out$log
 
   if (mse_est == T) {
     
@@ -250,7 +256,8 @@ unit_zi <- function(samp_dat,
     call = funcCall,
     res = final_df,
     lin_mod = original_pred$lmer,
-    log_mod = original_pred$glmer
+    log_mod = original_pred$glmer,
+    fit_log = original_log
   )
   
   structure(out, class = "zi_mod")
@@ -261,7 +268,7 @@ unit_zi <- function(samp_dat,
 print.zi_mod <- function(x, ...) {
   
   cat("\nCall:\n")
-  console_cat(deparse(x$call))
+  cat(deparse(x$call))
   cat("\n\n")
   
   cat("Linear Model: \n")
