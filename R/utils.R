@@ -170,14 +170,5 @@ capture_all <- function(.f){
   
 }
 
-fm <- function(x) {
-  message("test")
-  x
-}
-
-
-f_m <- capture_all(fm)
-
-f_m(10)
 
 
