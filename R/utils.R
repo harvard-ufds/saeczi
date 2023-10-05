@@ -170,11 +170,6 @@ capture_all <- function(.f){
   
 }
 
-fe <- function(x){
-  stop("hey hey hey")
-}
-
-f_e <- capture_all(fe)
 
 
 
