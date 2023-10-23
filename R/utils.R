@@ -147,7 +147,7 @@ capture_all <- function(.f){
     
     res <- rlang::try_fetch(
       .f(...),
-      error = function(err) abort("Failed.", parent = err),
+      error = function(err) rlang::abort("Failed.", parent = err),
       warning = function(warn) warn,
       message = function(message) message,
     )

@@ -289,13 +289,15 @@ print.zi_mod <- function(x, ...) {
   
 }
 
-#' #' @export
-#' summary.zi_mod <- function(obj, ...) {
-#'   
-#'   
-#'   
-#' }
-#' 
+#' @export
+summary.zi_mod <- function(x, ...) {
+
+  print(summary(x$lin_mod))
+  cat("\n")
+  print(summary(x$log_mod))
+
+}
+
 #' #' @export
 #' print.summary.zi_mod <- function(x, ...) {
 #'   
