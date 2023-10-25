@@ -199,6 +199,8 @@ unit_zi <- function(samp_dat,
                                                    FUN = mean), c("domain", "domain_est"))
     
     by_domains <- split(boot_pop_data, f = boot_pop_data$domain)
+    
+    num_plots <- data.frame(table(samp_dat[ , domain_level]))
 
     # furrr with progress bar
     boot_rep_with_progress_bar <- function(x) {
@@ -211,6 +213,7 @@ unit_zi <- function(samp_dat,
           boot_pop_data,
           samp_dat,
           domain_level,
+          num_plots,
           boot_lin_formula,
           boot_log_formula,
           boot_truth,
