@@ -25,8 +25,7 @@ Imports:
     furrr,
     future,
     methods,
-    rlang,
-    Matrix (>= 1.6)
+    rlang
 RoxygenNote: 7.2.3
 Suggests: 
     testthat (>= 3.0.0)
