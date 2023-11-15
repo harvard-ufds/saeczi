@@ -24,7 +24,7 @@
 #' @import stats
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options 
-#' @importFrom purrr map map_dfr
+#' @importFrom purrr map
 #' @importFrom methods is
 
 unit_zi <- function(samp_dat,
@@ -219,8 +219,10 @@ unit_zi <- function(samp_dat,
         },
         .options = furrr_options(seed = TRUE))
     
-      res_df <- res |>
-        map_dfr(.f = ~ .x$sqerr)
+      res_lst <- res |>
+        map(.f = ~ .x$sqerr)
+      
+      res_df <- do.call("rbind", res_lst)
         
       # res_df <- do.call("rbind", res)
       log_lst <- res |>
