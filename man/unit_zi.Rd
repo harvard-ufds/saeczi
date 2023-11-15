@@ -9,7 +9,7 @@ unit_zi(
   pop_dat,
   lin_formula,
   log_formula = lin_formula,
-  domain_level = "COUNTYFIPS",
+  domain_level,
   B = 100,
   mse_est = FALSE,
   parallel = FALSE

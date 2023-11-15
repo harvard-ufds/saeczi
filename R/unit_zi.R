@@ -24,14 +24,14 @@
 #' @import stats
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options 
-#' @importFrom purrr map
+#' @importFrom purrr map map_dfr
 #' @importFrom methods is
 
 unit_zi <- function(samp_dat,
                     pop_dat,
                     lin_formula,
                     log_formula = lin_formula,
-                    domain_level = "COUNTYFIPS",
+                    domain_level,
                     B = 100,
                     mse_est = FALSE,
                     parallel = FALSE) {
@@ -66,25 +66,22 @@ unit_zi <- function(samp_dat,
     "\\w+"
   ))
   
-  # want to capture warnings and messages from original models fit
-  fit_zi_capture <- capture_all(fit_zi)
+  
 
-  original_out <- fit_zi_capture(
+  original_out <- fit_zi(
     samp_dat,
     pop_dat,
     lin_formula,
     log_formula,
     domain_level
   )
-  
-  original_pred <- original_out$result
-  original_log <- original_out$log
+
 
   if (mse_est == T) {
     
     zi_model_coefs <- mse_coefs(
-      original_pred$lmer,
-      original_pred$glmer
+      original_out$lmer,
+      original_out$glmer
     )
 
     params_and_domain <- data.frame(
@@ -136,8 +133,7 @@ unit_zi <- function(samp_dat,
     )
 
     # predict probability of non-zeros
-    p_hat_i <- exp(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)/
-      (1 + exp(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i))
+    p_hat_i <- 1/(1 + exp(-(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)))
 
     # Generate corresponding deltas
     delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
@@ -149,7 +145,7 @@ unit_zi <- function(samp_dat,
     )
     
     # remove columns if lme4 removes them in the initial fitting process
-    x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_pred$lmer))]
+    x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_out$lmer))]
 
     linear_preds <- x_lin_matrix %*% zi_model_coefs$beta_hat +
       boot_data_generation_params$random_effects$area_random_errors +
@@ -209,37 +205,45 @@ unit_zi <- function(samp_dat,
 
       res <- x |> future_map( ~{
         p()
-        boot_rep(
-          boot_pop_data,
-          samp_dat,
-          domain_level,
-          num_plots,
-          boot_lin_formula,
-          boot_log_formula,
-          boot_truth,
-          by_domains
-        )
+        out <- boot_rep(
+                  boot_pop_data,
+                  samp_dat,
+                  domain_level,
+                  num_plots,
+                  boot_lin_formula,
+                  boot_log_formula,
+                  boot_truth,
+                  by_domains
+               )
+        out
         },
         .options = furrr_options(seed = TRUE))
     
-      res_df <- do.call("rbind", res)
+      res_df <- res |>
+        map_dfr(.f = ~ .x$sqerr)
+        
+      # res_df <- do.call("rbind", res)
+      log_lst <- res |>
+        map(.f = ~ .x$log)
+      
+      list(res_df, log_lst)
       
     }
 
     with_progress({
-      mse_df <- boot_rep_with_progress_bar(1:B)
+      boot_res <- boot_rep_with_progress_bar(1:B)
     })
 
     final_df <- setNames(
       aggregate(sq_error ~ domain,
-                data = mse_df,
+                data = boot_res[[1]],
                 FUN = function(x) sum(x)/B),
       c("domain", "mse")
       )
 
     final_df <- merge(
       x = final_df,
-      y = original_pred$pred,
+      y = original_out$pred,
       by = "domain",
       all.x = TRUE
     )
@@ -251,16 +255,16 @@ unit_zi <- function(samp_dat,
 
   } else {
 
-    final_df <- original_pred$pred
+    final_df <- original_out$pred
 
   }
 
   out <- list(
     call = funcCall,
     res = final_df,
-    lin_mod = original_pred$lmer,
-    log_mod = original_pred$glmer,
-    fit_log = original_log
+    bootstrap_log = boot_res[[2]],
+    lin_mod = original_out$lmer,
+    log_mod = original_out$glmer
   )
   
   structure(out, class = "zi_mod")

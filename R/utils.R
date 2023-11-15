@@ -73,17 +73,21 @@ boot_rep <- function(pop_boot,
   boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
   boot_data <- do.call("rbind", boot_data_ls)
   
-  # make this tryCatch recursive
-  fit_zi_tc <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
+  # capture warnings and messages silently when bootstrapping
+  fit_zi_capture <- capture_all(fit_zi)
+  
+  # if resampling doesn't fix things, just return properly formatted NAs
+  second_try <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
     return(
       tryCatch(
         {
-          fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+          fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
         },
         error = function(cond) {
-          boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
-          boot_data <- do.call("rbind", boot_data_ls)
-          fit_zi(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+          zi_domain_preds <- boot_truth
+          zi_domain_preds$domain_est <- NA
+          names(zi_domain_preds) <- c("domain", "Y_hat_j")
+          list(result = list(lmer = NA, glmer = NA, pred = zi_domain_preds), log = cond)
         }
       )
     )
@@ -91,21 +95,21 @@ boot_rep <- function(pop_boot,
   
   boot_samp_fit  <- tryCatch(
     {
-      fit_zi_tc(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+      fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
     },
     error = function(cond) {
       boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
       boot_data <- do.call("rbind", boot_data_ls)
-      fit_zi_tc(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+      second_try(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
     }
   )
   
-  squared_error <- merge(x = boot_samp_fit$pred, y = boot_truth, by = "domain", all.x = TRUE) |>
+  squared_error <- merge(x = boot_samp_fit$result$pred, y = boot_truth, by = "domain", all.x = TRUE) |>
     transform(sq_error = (Y_hat_j - domain_est)^2)
   
   squared_error <- squared_error[ , c("domain", "sq_error")]
   
-  return(squared_error)
+  return(list(sqerr = squared_error, log = boot_samp_fit$log))
   
 }
 
