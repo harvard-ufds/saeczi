@@ -19,7 +19,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     stats,
-    lme4 (>= 1.35),
+    lme4,
     purrr,
     progressr, 
     furrr,
