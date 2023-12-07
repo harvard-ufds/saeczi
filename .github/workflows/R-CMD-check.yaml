@@ -44,6 +44,9 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
           
+      - name: Set CRAN mirror
+        run: echo "options(repos = c(CRAN='https://cloud.r-project.org/'))" > ~/.Rprofile
+
       - name: Install problem dependency
         run: |
           Rscript -e 'install.packages("lme4", type = "source")'
