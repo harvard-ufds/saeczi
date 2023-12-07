@@ -1,7 +1,5 @@
 library(saeczi)
 
-install.packages("lme4", type = "source")
-
 data(pop)
 data(samp)
 
