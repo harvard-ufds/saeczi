@@ -174,6 +174,7 @@ unit_zi <- function(samp_dat,
 
     ## bootstrapping -------------------------------------------------------------
 
+    
     boot_pop_data <- cbind(pop_dat, boot_pop_data)
 
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
