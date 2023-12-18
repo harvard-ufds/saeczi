@@ -76,9 +76,15 @@ boot_rep <- function(pop_boot,
   # capture warnings and messages silently when bootstrapping
   fit_zi_capture <- capture_all(fit_zi)
   
-  # if resampling doesn't fix things, just return properly formatted NAs
-  second_try <- function(samp_dat, pop_dat, lin_formula, log_formula , domain_level) {
-    return(
+  # nested tryCatch
+  # tries resampling once and if it fails again returns properly structured output filled with NAs
+  boot_samp_fit  <- tryCatch(
+    {
+      fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+    },
+    error = function(cond) {
+      boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
+      boot_data <- do.call("rbind", boot_data_ls)
       tryCatch(
         {
           fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
@@ -90,17 +96,6 @@ boot_rep <- function(pop_boot,
           list(result = list(lmer = NA, glmer = NA, pred = zi_domain_preds), log = cond)
         }
       )
-    )
-  }
-  
-  boot_samp_fit  <- tryCatch(
-    {
-      fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
-    },
-    error = function(cond) {
-      boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
-      boot_data <- do.call("rbind", boot_data_ls)
-      second_try(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
     }
   )
   
@@ -162,6 +157,9 @@ capture_all <- function(.f){
     
     if("error" %in% class(res)) {
       stop(res$message)
+    } else if (!any(c("warning", "message") %in% class(res))){
+      out$result <- try_out
+      out$log <- NA
     } else {
       out$result <- try_out
       out$log <- res$message
@@ -172,7 +170,6 @@ capture_all <- function(.f){
   }
   
 }
-
 
 
 

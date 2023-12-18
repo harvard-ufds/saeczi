@@ -158,20 +158,8 @@ unit_zi <- function(samp_dat,
       response = boot_pop_response
     )
 
-    # domain level estimates for bootstrap population data
-    boot_pop_param <- setNames(
-      aggregate(
-        response ~ domain,
-        data = boot_pop_data,
-        FUN = mean
-      ),
-      c("domain", "domain_est")
-    )
-
-
     ## bootstrapping -------------------------------------------------------------
 
-    
     boot_pop_data <- cbind(pop_dat, boot_pop_data)
 
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
