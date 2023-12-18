@@ -49,7 +49,7 @@ unit_zi <- function(samp_dat,
   }
   
   if (parallel && is(future::plan(), "sequential")) {
-    warning("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
+    message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
     message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
   }
 
@@ -66,8 +66,6 @@ unit_zi <- function(samp_dat,
     "\\w+"
   ))
   
-  
-
   original_out <- fit_zi(
     samp_dat,
     pop_dat,
@@ -76,8 +74,7 @@ unit_zi <- function(samp_dat,
     domain_level
   )
 
-
-  if (mse_est == T) {
+  if (mse_est) {
     
     zi_model_coefs <- mse_coefs(
       original_out$lmer,
@@ -232,10 +229,37 @@ unit_zi <- function(samp_dat,
       list(res_df, log_lst)
       
     }
-
-    with_progress({
-      boot_res <- boot_rep_with_progress_bar(1:B)
-    })
+    
+    if (parallel) {
+      
+      with_progress({
+        boot_res <- boot_rep_with_progress_bar(1:B)
+      }) 
+      
+    } else {
+      
+      res <- 
+        map(.x = 1:B,
+            .f = \(i) boot_rep(boot_pop_data,
+                               samp_dat,
+                               domain_level,
+                               num_plots,
+                               boot_lin_formula,
+                               boot_log_formula,
+                               boot_truth,
+                               by_domains))
+      
+      res_lst <- res |>
+        map(.f = ~ .x$sqerr)
+      
+      res_df <- do.call("rbind", res_lst)
+      
+      log_lst <- res |>
+        map(.f = ~ .x$log)
+      
+      boot_res <- list(res_df, log_lst)
+      
+    }
 
     final_df <- setNames(
       aggregate(sq_error ~ domain,
