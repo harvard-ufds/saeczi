@@ -18,7 +18,12 @@ test_that("printed result is as expected", {
 })
 
 test_that("result is as expected", {
-  expect_snapshot(result$res)
+  expect_equal(result$res$mse[2], 80.5, tolerance = 0.01)
+  expect_equal(result$res$mse[12], 144.4, tolerance = 0.01)
+  expect_equal(result$res$mse[36], 116.6, tolerance = 0.01)
+  
+  expect_equal(result$res$est[8], 104.4, tolerance = 0.01)
+  expect_equal(result$res$est[17], 66.7, tolerance = 0.01)
 })
 
 test_that("result[[2]] is a df", {
