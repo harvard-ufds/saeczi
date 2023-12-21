@@ -73,7 +73,8 @@ unit_zi <- function(samp_dat,
     log_formula,
     domain_level
   )
-
+  
+  set.seed(10)
   if (mse_est) {
     
     zi_model_coefs <- mse_coefs(
