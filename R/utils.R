@@ -1,4 +1,41 @@
+# fast samp-by-grp
+samp_by_grp <- function(samp, pop, dom_nm, B) {
+  
+  num_plots <- dplyr::count(samp, !!rlang::sym(dom_nm))
+  # our boot_pop_data has column name domain as its group variable
+  setup <- dplyr::count(pop, domain) |> 
+    dplyr::left_join(num_plots, by = c(domain = dom_nm)) |>
+    dplyr::mutate(add_to = dplyr::lag(cumsum(n.x), default = 0)) |>
+    dplyr::rowwise() |> 
+    dplyr::mutate(map_args = list(list(n.x, n.y, add_to))) 
+  
+  all_samps <- vector("list", length = B)
+  
+  for (i in 1:B) {
+    ids <- setup |>
+      dplyr::mutate(samps = purrr::pmap(.l = map_args, .f = \ (x, y, z) {
+        sample(1:x, size = y, replace = TRUE) + z
+      })) |>
+      dplyr::pull(samps) |>
+      unlist()
+    
+    out <- pop[ids, ]
+    all_samps[[i]] <- out
+  }
+  
+  return(all_samps)
+}
+
+
+
 # fit_zi function
+
+# don't do prediction here
+# predict_zi
+
+# take the mean of the pixels in that county
+# then predict on those means
+
 fit_zi <- function(samp_dat,
                    pop_dat,
                    lin_formula,
@@ -35,10 +72,14 @@ fit_zi <- function(samp_dat,
   # Fit logistic mixed effects on ALL data
   glmer_z <- suppressMessages(lme4::glmer(log_reg_formula, data = samp_dat, family = "binomial"))
   
+  # dont do this
   unit_level_preds <- setNames(
     stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE) * stats::predict(glmer_z, pop_dat, type = "response"),
     as.character(pop_dat[ , domain_level, drop = T])
   ) 
+  
+  # idea: just return model params and fit later
+
   
   zi_domain_preds <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
   
@@ -47,6 +88,11 @@ fit_zi <- function(samp_dat,
   return(list(lmer = lmer_nz, glmer = glmer_z, pred = zi_domain_preds))
   
 }
+
+
+# predict_zi <- function(mod1, mod2, data) {
+#   
+# }
 
 # base version of dplyr::slice_sample
 slice_samp <- function(.data, n, replace = TRUE) {
@@ -61,45 +107,40 @@ str_extract_all_base <- function(string, pattern) {
 
 
 # bootstrap rep helper
-boot_rep <- function(pop_boot,
-                     samp_dat,
+boot_rep <- function(boot_samp,
+                     pop_boot,
                      domain_level,
-                     num_plots,
                      boot_lin_formula,
                      boot_log_formula,
-                     boot_truth,
-                     by_domains) {
-
-  boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
-  boot_data <- do.call("rbind", boot_data_ls)
+                     boot_truth) {
   
   # capture warnings and messages silently when bootstrapping
   fit_zi_capture <- capture_all(fit_zi)
   
-  # nested tryCatch
-  # tries resampling once and if it fails again returns properly structured output filled with NAs
   boot_samp_fit  <- tryCatch(
     {
-      fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
+      fit_zi_capture(boot_samp,
+                     pop_boot,
+                     boot_lin_formula,
+                     boot_log_formula,
+                     domain_level)
     },
     error = function(cond) {
-      boot_data_ls <- purrr::map2(.x = by_domains, .y = num_plots$Freq, slice_samp)
-      boot_data <- do.call("rbind", boot_data_ls)
-      tryCatch(
-        {
-          fit_zi_capture(boot_data, pop_boot, boot_lin_formula, boot_log_formula, domain_level)
-        },
-        error = function(cond) {
-          zi_domain_preds <- boot_truth
-          zi_domain_preds$domain_est <- NA
-          names(zi_domain_preds) <- c("domain", "Y_hat_j")
-          list(result = list(lmer = NA, glmer = NA, pred = zi_domain_preds), log = cond)
-        }
-      )
+      zi_domain_preds <- boot_truth
+      zi_domain_preds$domain_est <- NA
+      names(zi_domain_preds) <- c("domain", "Y_hat_j")
+      list(result = list(lmer = NA,
+                         glmer = NA,
+                         pred = zi_domain_preds),
+           log = cond)
+    
     }
   )
   
-  squared_error <- merge(x = boot_samp_fit$result$pred, y = boot_truth, by = "domain", all.x = TRUE) |>
+  squared_error <- merge(x = boot_samp_fit$result$pred,
+                         y = boot_truth,
+                         by = "domain",
+                         all.x = TRUE) |>
     transform(sq_error = (Y_hat_j - domain_est)^2)
   
   squared_error <- squared_error[ , c("domain", "sq_error")]

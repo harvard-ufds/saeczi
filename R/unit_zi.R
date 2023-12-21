@@ -23,8 +23,8 @@
 #' @export unit_zi
 #' @import stats
 #' @importFrom progressr progressor with_progress
-#' @importFrom furrr future_map furrr_options 
-#' @importFrom purrr map
+#' @importFrom furrr future_map furrr_options future_map2
+#' @importFrom purrr map map2
 #' @importFrom methods is
 
 unit_zi <- function(samp_dat,
@@ -180,37 +180,35 @@ unit_zi <- function(samp_dat,
     boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
                                                    FUN = mean), c("domain", "domain_est"))
     
-    by_domains <- split(boot_pop_data, f = boot_pop_data$domain)
+    # create bootstrap samples 
+    boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
     
-    num_plots <- data.frame(table(samp_dat[ , domain_level]))
-
+    # goal is to not pass boot_pop_data to the map at all
+    
+    # still need to implement here...
     # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x) {
+    boot_rep_with_progress_bar <- function(x, boot_lst) {
 
       p <- progressor(steps = length(x))
 
-      res <- x |> future_map( ~{
-        p()
-        out <- boot_rep(
-                  boot_pop_data,
-                  samp_dat,
-                  domain_level,
-                  num_plots,
-                  boot_lin_formula,
-                  boot_log_formula,
-                  boot_truth,
-                  by_domains
-               )
-        out
-        },
-        .options = furrr_options(seed = TRUE))
+      res <- 
+        furrr::future_map(.x = boot_lst,
+                          .f = \(.x) {
+                            p()
+                            boot_rep(boot_samp = .x,
+                                     pop_boot = boot_pop_data,
+                                     domain_level,
+                                     boot_lin_formula,
+                                     boot_log_formula,
+                                     boot_truth)
+                          },
+                          .options = furrr_options(seed = TRUE))
     
       res_lst <- res |>
         map(.f = ~ .x$sqerr)
       
       res_df <- do.call("rbind", res_lst)
-        
-      # res_df <- do.call("rbind", res)
+
       log_lst <- res |>
         map(.f = ~ .x$log)
       
@@ -221,21 +219,22 @@ unit_zi <- function(samp_dat,
     if (parallel) {
       
       with_progress({
-        boot_res <- boot_rep_with_progress_bar(1:B)
+        boot_res <- boot_rep_with_progress_bar(x = 1:B,
+                                               boot_lst = boot_samp_ls)
       }) 
       
     } else {
       
       res <- 
-        map(.x = 1:B,
-            .f = \(i) boot_rep(boot_pop_data,
-                               samp_dat,
-                               domain_level,
-                               num_plots,
-                               boot_lin_formula,
-                               boot_log_formula,
-                               boot_truth,
-                               by_domains))
+        purrr::map(.x = boot_samp_ls,
+                   .f = \(.x) { 
+                     boot_rep(boot_samp = .x,
+                              pop_boot = boot_pop_data,
+                              domain_level,
+                              boot_lin_formula,
+                              boot_log_formula,
+                              boot_truth)
+                    })
       
       res_lst <- res |>
         map(.f = ~ .x$sqerr)

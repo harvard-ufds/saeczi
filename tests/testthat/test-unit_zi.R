@@ -1,5 +1,4 @@
 library(saeczi)
-
 data(pop)
 data(samp)
 
@@ -14,8 +13,12 @@ result <- unit_zi(samp,
                   B = 5,
                   parallel = FALSE)
 
-test_that("result is as expected", {
+test_that("printed result is as expected", {
   expect_snapshot(result)
+})
+
+test_that("result is as expected", {
+  expect_snapshot(result$res)
 })
 
 test_that("result[[2]] is a df", {
