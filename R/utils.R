@@ -30,12 +30,6 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
 
 # fit_zi function
 
-# don't do prediction here
-# predict_zi
-
-# take the mean of the pixels in that county
-# then predict on those means
-
 fit_zi <- function(samp_dat,
                    pop_dat,
                    lin_formula,
@@ -67,12 +61,16 @@ fit_zi <- function(samp_dat,
   nz <- samp_dat[samp_dat[ , Y] > 0, ]
   
   # fit linear mixed model on nonzero data
-  lmer_nz <- suppressMessages(lme4::lmer(lin_reg_formula, data = nz))
+  lmer_nz <- suppressMessages(
+    lme4::lmer(lin_reg_formula, data = nz)
+    )
   
   # Fit logistic mixed effects on ALL data
-  glmer_z <- suppressMessages(lme4::glmer(log_reg_formula, data = samp_dat, family = "binomial"))
+  glmer_z <- suppressMessages(
+    lme4::glmer(log_reg_formula, data = samp_dat, family = "binomial")
+    )
   
-  # dont do this
+  # dont do this in here
   unit_level_preds <- setNames(
     stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE) * stats::predict(glmer_z, pop_dat, type = "response"),
     as.character(pop_dat[ , domain_level, drop = T])
@@ -90,9 +88,9 @@ fit_zi <- function(samp_dat,
 }
 
 
-# predict_zi <- function(mod1, mod2, data) {
-#   
-# }
+predict_zi <- function(mod1, mod2, data) {
+  return(0)
+}
 
 # base version of dplyr::slice_sample
 slice_samp <- function(.data, n, replace = TRUE) {
