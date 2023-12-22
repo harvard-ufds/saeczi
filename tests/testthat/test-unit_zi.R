@@ -1,4 +1,3 @@
-library(saeczi)
 data(pop)
 data(samp)
 
