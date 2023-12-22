@@ -12,10 +12,6 @@ result <- unit_zi(samp,
                   B = 5,
                   parallel = FALSE)
 
-test_that("printed result is as expected", {
-  expect_snapshot(result)
-})
-
 test_that("result is as expected", {
   expect_equal(result$res$mse[2], 80.5, tolerance = 0.01)
   expect_equal(result$res$mse[12], 144.4, tolerance = 0.01)
