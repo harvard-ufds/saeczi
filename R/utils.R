@@ -75,6 +75,7 @@ fit_zi <- function(samp_dat,
 
 
 predict_zi <- function(.data,
+                       truth,
                        domain_level,
                        beta_lm_mat,
                        beta_glm_mat,
@@ -98,19 +99,30 @@ predict_zi <- function(.data,
     mat_u_log[ ,i] <- u[[i]]$u_glm[dom_ref]
   }
   
-  pixel_res <- (pred_lin_comp + mat_u_lin) * 1/exp(-(pred_log_comp + mat_u_log))
+  pixel_res <- (pred_lin_comp + mat_u_lin) * (1/exp(-(pred_log_comp + mat_u_log)))
+  
+  return(pixel_res)
   
   # need to take mean of each column *by* domain_level
   agg_fun <- function(x, grps = dom_ref) {
     aggregate(x ~ grps, FUN = mean, na.rm = TRUE)
   }
   
-  colwise_means <- apply(pixel_res, 2, FUN = agg_fun) 
+  colwise_means_ls <- apply(pixel_res, 2, FUN = agg_fun) 
+  colwise_means <- do.call("rbind", colwise_means_ls)
   
-  res_doms <- aggregate(x ~ grps, data = do.call("rbind", colwise_means), FUN = mean)
+  
+  squared_error <- merge(x = colwise_means,
+                         y = truth,
+                         by.x = "grps",
+                         by.y = "domain",
+                         all.x = TRUE) |>
+    transform(sq_error = (x - domain_est)^2)
+
+  
+  res_doms <- aggregate(sq_error ~ grps, data = squared_error, FUN = mean)
   
   return(res_doms)
-  # call a c++ function here eventually?
   
 }
 

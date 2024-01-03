@@ -260,6 +260,7 @@ unit_zi <- function(samp_dat,
         map(.f = ~ list(u_lm = .x$params$u_lm, u_glm = .x$params$u_glm))
       
       preds_full <- predict_zi(.data = pop_dat,
+                               truth = boot_truth,
                                domain_level = domain_level,
                                beta_lm_mat = beta_lm_mat,
                                beta_glm_mat = beta_glm_mat,
@@ -267,9 +268,8 @@ unit_zi <- function(samp_dat,
                                lin_X = lin_X,
                                log_X = log_X)
       
+      return(preds_full)
       
-      # pred_lin_comp <- model.matrix(~ ., pop_dat[ ,lin_X]) %*% beta_lm_mat
-      # pred_log_comp <- model.matrix(~ ., pop_dat[ ,log_X]) %*% beta_glm_mat
       
       
       log_lst <- res |>
