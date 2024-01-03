@@ -24,7 +24,7 @@
 #' @import stats
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options future_map2
-#' @importFrom purrr map map2
+#' @importFrom purrr map map2 map_dfr
 #' @importFrom methods is
 
 unit_zi <- function(samp_dat,
@@ -37,12 +37,12 @@ unit_zi <- function(samp_dat,
                     parallel = FALSE) {
   
   funcCall <- match.call() 
-
+  
   if(!("formula" %in% class(lin_formula))) {
     lin_formula <- as.formula(lin_formula)
     message("lin_formula was converted to class 'formula'")
   }
-
+  
   if(!("formula" %in% class(log_formula))) {
     log_formula <- as.formula(log_formula)
     message("log_formula was converted to class 'formula'")
@@ -52,7 +52,7 @@ unit_zi <- function(samp_dat,
     message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
     message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
   }
-
+  
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
   
@@ -66,13 +66,28 @@ unit_zi <- function(samp_dat,
     "\\w+"
   ))
   
+  all_preds <- unique(lin_X, log_X)
+  
   original_out <- fit_zi(
     samp_dat,
-    pop_dat,
     lin_formula,
     log_formula,
     domain_level
   )
+  
+  mod1 <- original_out$lmer
+  mod2 <- original_out$glmer
+  .data <- pop_dat[ ,c(all_preds, domain_level)]
+  
+  unit_level_preds <- setNames(
+    stats::predict(mod1, newdata = .data, allow.new.levels = TRUE) * stats::predict(mod2, newdata = .data, type = "response"),
+    as.character(.data[ , domain_level, drop = T])
+  )
+  
+  zi_domain_preds <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
+  names(zi_domain_preds) <- c("domain", "Y_hat_j")
+  
+  original_pred <- zi_domain_preds
   
   if (mse_est) {
     
@@ -80,29 +95,29 @@ unit_zi <- function(samp_dat,
       original_out$lmer,
       original_out$glmer
     )
-
+    
     params_and_domain <- data.frame(
       dom = zi_model_coefs$domain_levels,
       b_i = zi_model_coefs$b_i
     )
-
+    
     joined_pop_bi <- merge(
       x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
       y = params_and_domain,
       by = "dom",
       all.x = TRUE
     )
-
+    
     x_log_matrix <- model.matrix(
       as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
       data = pop_dat[ , log_X, drop = F]
     )
-
+    
     x_lin_matrix <- model.matrix(
       as.formula(paste0(" ~ ", paste(lin_X, collapse = " + "))),
       data = pop_dat[ , lin_X, drop = F]
     )
-
+    
     # generating random errors
     individual_random_errors <- data.frame(
       dom = pop_dat[ , domain_level, drop = T],
@@ -112,7 +127,7 @@ unit_zi <- function(samp_dat,
         sd = sqrt(zi_model_coefs$sig2_eps_hat)
       )
     )
-
+    
     area_random_errors <- data.frame(
       dom = zi_model_coefs$domain_levels,
       area_random_errors = rnorm(
@@ -121,20 +136,20 @@ unit_zi <- function(samp_dat,
         sd = sqrt(zi_model_coefs$sig2_mu_hat)
       )
     )
-
+    
     random_effects <- merge(
       x = individual_random_errors,
       y = area_random_errors,
       by = "dom",
       all.x = TRUE
     )
-
+    
     # predict probability of non-zeros
     p_hat_i <- 1/(1 + exp(-(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)))
-
+    
     # Generate corresponding deltas
     delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
-
+    
     boot_data_generation_params <- list(
       random_effects = random_effects,
       p_hat_i = p_hat_i,
@@ -143,25 +158,25 @@ unit_zi <- function(samp_dat,
     
     # remove columns if lme4 removes them in the initial fitting process
     x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_out$lmer))]
-
+    
     linear_preds <- x_lin_matrix %*% zi_model_coefs$beta_hat +
       boot_data_generation_params$random_effects$area_random_errors +
       boot_data_generation_params$random_effects$individual_random_errors
-
+    
     boot_pop_response <- as.vector(
       linear_preds * boot_data_generation_params$delta_i_star
     )
-
+    
     # bootstrap population data
     boot_pop_data <- data.frame(
       domain = pop_dat[ , domain_level, drop = T],
       response = boot_pop_response
     )
-
+    
     ## bootstrapping -------------------------------------------------------------
-
+    
     boot_pop_data <- cbind(pop_dat, boot_pop_data)
-
+    
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
     boot_lin_formula <- as.formula(
       paste0(
@@ -188,27 +203,26 @@ unit_zi <- function(samp_dat,
     # still need to implement here...
     # furrr with progress bar
     boot_rep_with_progress_bar <- function(x, boot_lst) {
-
+      
       p <- progressor(steps = length(x))
-
+      
       res <- 
-        furrr::future_map(.x = boot_lst,
+        furrr::future_map(.x = boot_samp_ls,
                           .f = \(.x) {
                             p()
                             boot_rep(boot_samp = .x,
-                                     pop_boot = boot_pop_data,
                                      domain_level,
                                      boot_lin_formula,
-                                     boot_log_formula,
-                                     boot_truth)
+                                     boot_log_formula)
                           },
                           .options = furrr_options(seed = TRUE))
-    
+      
+      
       res_lst <- res |>
         map(.f = ~ .x$sqerr)
       
       res_df <- do.call("rbind", res_lst)
-
+      
       log_lst <- res |>
         map(.f = ~ .x$log)
       
@@ -229,60 +243,78 @@ unit_zi <- function(samp_dat,
         purrr::map(.x = boot_samp_ls,
                    .f = \(.x) { 
                      boot_rep(boot_samp = .x,
-                              pop_boot = boot_pop_data,
                               domain_level,
                               boot_lin_formula,
-                              boot_log_formula,
-                              boot_truth)
-                    })
+                              boot_log_formula)
+                   })
       
-      res_lst <- res |>
-        map(.f = ~ .x$sqerr)
+      beta_lm_mat <- res |>
+        map_dfr(.f = ~ .x$params$beta_lm) |>
+        as.matrix()
       
-      res_df <- do.call("rbind", res_lst)
+      beta_glm_mat <- res |>
+        map_dfr(.f = ~ .x$params$beta_glm) |>
+        as.matrix()
+      
+      u_full <- res |>
+        map(.f = ~ list(u_lm = .x$params$u_lm, u_glm = .x$params$u_glm))
+      
+      preds_full <- predict_zi(.data = pop_dat,
+                               domain_level = domain_level,
+                               beta_lm_mat = beta_lm_mat,
+                               beta_glm_mat = beta_glm_mat,
+                               u = u_full,
+                               lin_X = lin_X,
+                               log_X = log_X)
+      
+      
+      # pred_lin_comp <- model.matrix(~ ., pop_dat[ ,lin_X]) %*% beta_lm_mat
+      # pred_log_comp <- model.matrix(~ ., pop_dat[ ,log_X]) %*% beta_glm_mat
+      
       
       log_lst <- res |>
         map(.f = ~ .x$log)
       
-      boot_res <- list(res_df, log_lst)
+      boot_res <- list(preds_full, log_lst)
       
     }
-
+    
     final_df <- setNames(
-      aggregate(sq_error ~ domain,
-                data = boot_res[[1]],
-                FUN = function(x) sum(x)/B),
+      boot_res[[1]],
       c("domain", "mse")
-      )
-
+    )
+    
     final_df <- merge(
       x = final_df,
-      y = original_out$pred,
+      y = original_pred,
       by = "domain",
       all.x = TRUE
     )
-
+    
     final_df <- setNames(
       final_df[ ,c("domain", "mse", "Y_hat_j")],
       c("domain", "mse", "est")
     )
-
+    
+    bootstrap_log <- boot_res[[2]]
+    
   } else {
-
-    final_df <- original_out$pred
-
+    
+    final_df <- original_pred
+    bootstrap_log <- NA
+    
   }
-
+  
   out <- list(
     call = funcCall,
     res = final_df,
-    bootstrap_log = boot_res[[2]],
+    bootstrap_log = bootstrap_log,
     lin_mod = original_out$lmer,
     log_mod = original_out$glmer
   )
   
   structure(out, class = "zi_mod")
-
+  
 }
 
 #' @export
@@ -312,11 +344,11 @@ print.zi_mod <- function(x, ...) {
 
 #' @export
 summary.zi_mod <- function(object, ...) {
-
+  
   print(summary(object$lin_mod))
   cat("\n")
   print(summary(object$log_mod))
-
+  
 }
 
 #' #' @export
