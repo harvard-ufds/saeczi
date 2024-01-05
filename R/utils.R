@@ -101,8 +101,6 @@ predict_zi <- function(.data,
   
   pixel_res <- (pred_lin_comp + mat_u_lin) * (1/exp(-(pred_log_comp + mat_u_log)))
   
-  return(pixel_res)
-  
   # need to take mean of each column *by* domain_level
   agg_fun <- function(x, grps = dom_ref) {
     aggregate(x ~ grps, FUN = mean, na.rm = TRUE)
@@ -120,7 +118,7 @@ predict_zi <- function(.data,
     transform(sq_error = (x - domain_est)^2)
 
   
-  res_doms <- aggregate(sq_error ~ grps, data = squared_error, FUN = mean)
+  res_doms <- aggregate(sq_error ~ grps, data = squared_error, FUN = function(x) sum(x) / B)
   
   return(res_doms)
   

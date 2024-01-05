@@ -267,10 +267,7 @@ unit_zi <- function(samp_dat,
                                u = u_full,
                                lin_X = lin_X,
                                log_X = log_X)
-      
-      return(preds_full)
-      
-      
+
       
       log_lst <- res |>
         map(.f = ~ .x$log)
