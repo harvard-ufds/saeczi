@@ -71,8 +71,35 @@ fit_zi <- function(samp_dat,
     )
   
   # dont do this in here
+  domains <- sort(unique(pop_dat[[domain_level]]))
+  X <- as.matrix(data.frame(1, pop_dat[lin_X]))
+  Z <- model.matrix(~ COUNTYFIPS, pop_dat) # hard coded, need to do non-std eval
+  Z[, 1] <- ifelse(pop_dat[[domain_level]] == sort(unique(nz[[domain_level]]))[1], 1, 0) 
+  colnames(Z)[1] <- paste0(domain_level, sort(unique(nz[[domain_level]]))[1])
+  
+  
+  rex <- ranef(lmer_nz)[[domain_level]][,1]
+  incr <- 0
+  len <- length(rex)
+  for (i in 1:length(domains)) {
+    if (!(domains[i] %in% unique(nz[[domain_level]]))) {
+      incr <- incr + 1
+      rex <- c(rex[1:i-1], 0, rex[(i):(len + incr)])
+    }
+  }
+  rex <- rex |> na.omit()
+  res.y <- X %*% lmer_nz@beta + Z %*% rex
+  res.y <- as.numeric(res.y)
+  
+  X.log <- as.matrix(data.frame(1, pop_dat[log_X]))
+  Z.log <- model.matrix(~ COUNTYFIPS, pop_dat) # hard coded
+  Z.log[, 1] <- ifelse(pop_dat[[domain_level]] == sort(unique(pop_dat[[domain_level]]))[1], 1, 0)
+  res.p <- exp(X.log %*% glmer_z@beta + Z.log %*% ranef(glmer_z)[[domain_level]][,1]) / (1 + exp(X.log %*% glmer_z@beta + Z.log %*% ranef(glmer_z)[[domain_level]][,1]))
+  
+  
   unit_level_preds <- setNames(
-    stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE) * stats::predict(glmer_z, pop_dat, type = "response"),
+    # stats::predict(lmer_nz, pop_dat, allow.new.levels = TRUE) * stats::predict(glmer_z, pop_dat, type = "response"),
+    res.y * res.p,
     as.character(pop_dat[ , domain_level, drop = T])
   ) 
   
