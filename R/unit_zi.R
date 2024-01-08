@@ -205,8 +205,6 @@ unit_zi <- function(samp_dat,
       
       p <- progressor(steps = length(x))
       
-      print(boot_rep)
-      
       res <- 
         furrr::future_map(.x = boot_samp_ls,
                           .f = \(.x) {
