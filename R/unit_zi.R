@@ -199,12 +199,13 @@ unit_zi <- function(samp_dat,
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
     
     # goal is to not pass boot_pop_data to the map at all
-    
-    # still need to implement here...
+
     # furrr with progress bar
     boot_rep_with_progress_bar <- function(x, boot_lst) {
       
       p <- progressor(steps = length(x))
+      
+      print(boot_rep)
       
       res <- 
         furrr::future_map(.x = boot_samp_ls,
@@ -217,16 +218,31 @@ unit_zi <- function(samp_dat,
                           },
                           .options = furrr_options(seed = TRUE))
       
+      beta_lm_mat <- res |>
+        map_dfr(.f = ~ .x$params$beta_lm) |>
+        as.matrix()
       
-      res_lst <- res |>
-        map(.f = ~ .x$sqerr)
+      beta_glm_mat <- res |>
+        map_dfr(.f = ~ .x$params$beta_glm) |>
+        as.matrix()
       
-      res_df <- do.call("rbind", res_lst)
+      u_full <- res |>
+        map(.f = ~ list(u_lm = .x$params$u_lm, u_glm = .x$params$u_glm))
+      
+      preds_full <- predict_zi(.data = pop_dat,
+                               truth = boot_truth,
+                               domain_level = domain_level,
+                               beta_lm_mat = beta_lm_mat,
+                               beta_glm_mat = beta_glm_mat,
+                               u = u_full,
+                               lin_X = lin_X,
+                               log_X = log_X)
+     
       
       log_lst <- res |>
         map(.f = ~ .x$log)
       
-      list(res_df, log_lst)
+      list(preds_full, log_lst)
       
     }
     
