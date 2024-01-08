@@ -99,7 +99,7 @@ predict_zi <- function(.data,
     mat_u_log[ ,i] <- u[[i]]$u_glm[dom_ref]
   }
   
-  pixel_res <- (pred_lin_comp + mat_u_lin) * (1/exp(-(pred_log_comp + mat_u_log)))
+  pixel_res <- (pred_lin_comp + mat_u_lin) * (1/(1 + exp(-(pred_log_comp + mat_u_log))))
   
   # need to take mean of each column *by* domain_level
   agg_fun <- function(x, grps = dom_ref) {
