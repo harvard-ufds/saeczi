@@ -83,25 +83,31 @@ predict_zi <- function(.data,
                        lin_X,
                        log_X) {
   
-  # result of each is N x B matrix
-  pred_lin_comp <- model.matrix(~ ., .data[ ,lin_X]) %*% t(beta_lm_mat)
-  pred_log_comp <- model.matrix(~ ., .data[ ,log_X]) %*% t(beta_glm_mat)
+  design_mat_lm <- model.matrix(~., .data[ ,lin_X])
+  design_mat_glm <- model.matrix(~., .data[ ,log_X])
   
   dom_ref <- .data[[domain_level]]
-  N <- nrow(.data)
   B <- length(u)
   
-  mat_u_lin <- matrix(rep(0, N*B), nrow = N)
-  mat_u_log <- matrix(rep(0, N*B), nrow = N)
+  u_lm_ls <- vector(mode = "list", length = B)
+  u_glm_ls <- vector(mode= "list", length = B)
   
-  for (i in seq_len(length(u))) {
-    mat_u_lin[ ,i] <- u[[i]]$u_lm[dom_ref]
-    mat_u_log[ ,i] <- u[[i]]$u_glm[dom_ref]
+  # this is faster in R because of how fast lookup vectors are
+  for (b in seq_len(length(u))) {
+    u_lm_ls[[b]] <- u[[b]]$u_lm[dom_ref]
+    u_glm_ls[[b]] <- u[[b]]$u_glm[dom_ref]
   }
   
-  pixel_res <- (pred_lin_comp + mat_u_lin) * (1/(1 + exp(-(pred_log_comp + mat_u_log))))
+  # res <- _predict_zi(beta_lm = beta_lm_mat,
+  #                    beta_glm = beta_glm_mat,
+  #                    u_lm = u_lm_ls,
+  #                    u_glm = u_glm_ls,
+  #                    design_mat_lm = design_mat_lm,
+  #                    design_mat_glm = design_mat_glm)
   
   # need to take mean of each column *by* domain_level
+  
+  
   agg_fun <- function(x, grps = dom_ref) {
     aggregate(x ~ grps, FUN = mean, na.rm = TRUE)
   }

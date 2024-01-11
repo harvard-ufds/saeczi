@@ -1,45 +1,65 @@
 // [[Rcpp::depends(RcppEigen)]]
-
 #include <string>
+#include <unordered_map>
 #include <Rcpp.h>
 #include <RcppEigen.h>
-#include "predict.h"
 using namespace Eigen;
 using namespace Rcpp;
 
 
 //[[Rcpp::export]]
-SEXP predict(const Rcpp::DataFrame &newdata,
-             const String domain,
-             const Eigen::MatrixXd &lm,
-             const Eigen::MatrixXd &glm,
-             const Rcpp::List &u,
-             const Rcpp::CharacterVector lm_X,
-             const Rcpp::CharacterVector glm_X,
-             const int B) {
+SEXP by_index(Rcpp::CharacterVector names,
+              Rcpp::NumericVector vals,
+              Rcpp::CharacterVector to_id) {
   
-  
-  
-  // mat_u_lin <- matrix(rep(0, N*B), nrow = N)
-  // mat_u_log <- matrix(rep(0, N*B), nrow = N)
-  int N = newdata.nrows();
-  Eigen::MatrixXd mat_u_lm(N, B);
-  Eigen::MatrixXd mat_u_glm(N, B);
-  
-  for (int j = 0; j < B; ++j) {
-    Eigen::VectorXd colVec_lm = as<Eigen::VectorXd>(u[j]);
-    Eigen::VectorXd colVec_glm = as<Eigen::VectorXd>(u[j]);
-    mat_u_lm.col(j) = colVec_lm;
-    mat_u_glm.col(j) = colVec_glm;
-    
+  std::unordered_map<Rcpp::String, double> namedVec;
+  for(int i = 0; i < vals.size(); i ++) {
+    namedVec[names[i]] = vals[i];
   }
-  // for (i in seq_len(length(u))) {
-  //  mat_u_lin[ ,i] <- u[[i]]$u_lm[dom_ref]
-  //  mat_u_log[ ,i] <- u[[i]]$u_glm[dom_ref]
-  //}
   
+  Rcpp::NumericVector res;
   
-  return(0);
+  for (const Rcpp::String& id : to_id) {
+    res.push_back(namedVec[id]);
+  }
+
+  return Rcpp::wrap(res);
+  
 }
 
+double sigmoid(double x) {
+  return 1.0 / (1.0 + std::exp(-x));
+}
+
+
+//[[Rcpp::export]]
+SEXP predict_zi(Eigen::MatrixXd &beta_lm,
+                Eigen::MatrixXd &beta_glm,
+                Rcpp::List &u_lm,
+                Rcpp::List &u_glm,
+                Eigen::MatrixXd &design_mat_lm,
+                Eigen::MatrixXd &design_mat_glm) {
+  
+  int N = beta_lm.rows();
+  int B = u_lm.size();
+  
+  Eigen::MatrixXd u_mat_lm(N, B);
+  Eigen::MatrixXd u_mat_glm(N, B);
+  
+  for (int b = 0; b < B; ++b) {
+    Eigen::VectorXd _u_lm = u_lm[b];
+    Eigen::VectorXd _u_glm = u_glm[b];
+    u_mat_lm.col(b) = _u_lm;
+    u_mat_glm.col(b) = _u_glm;
+  }
+  
+  Eigen::MatrixXd pred_lm = (design_mat_lm * beta_lm.transpose()) + u_mat_lm;
+  Eigen::MatrixXd pred_glm = (design_mat_glm * beta_glm.transpose()) + u_mat_glm;
+  pred_glm = pred_glm.unaryExpr([](double x) {return sigmoid(x); });
+  
+  Eigen::MatrixXd unit_preds = pred_lm.cwiseProduct(pred_glm);
+  
+  return Rcpp::wrap(unit_preds);
+  
+}
 
