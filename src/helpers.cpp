@@ -1,31 +1,10 @@
 // [[Rcpp::depends(RcppEigen)]]
-#include <string>
+#include <vector>
 #include <unordered_map>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 using namespace Eigen;
 using namespace Rcpp;
-
-
-//[[Rcpp::export]]
-SEXP by_index(Rcpp::CharacterVector names,
-              Rcpp::NumericVector vals,
-              Rcpp::CharacterVector to_id) {
-  
-  std::unordered_map<Rcpp::String, double> namedVec;
-  for(int i = 0; i < vals.size(); i ++) {
-    namedVec[names[i]] = vals[i];
-  }
-  
-  Rcpp::NumericVector res;
-  
-  for (const Rcpp::String& id : to_id) {
-    res.push_back(namedVec[id]);
-  }
-
-  return Rcpp::wrap(res);
-  
-}
 
 double sigmoid(double x) {
   return 1.0 / (1.0 + std::exp(-x));
@@ -46,6 +25,10 @@ SEXP predict_zi(Eigen::MatrixXd &beta_lm,
   Eigen::MatrixXd u_mat_lm(N, B);
   Eigen::MatrixXd u_mat_glm(N, B);
   
+  //Eigen::MatrixXd* u_lm_ptr = &u_mat_lm;
+  //Eigen::MatrixXd* u_glm_ptr = &u_mat_glm;
+  
+  
   for (int b = 0; b < B; ++b) {
     Eigen::VectorXd _u_lm = u_lm[b];
     Eigen::VectorXd _u_glm = u_glm[b];
@@ -63,3 +46,31 @@ SEXP predict_zi(Eigen::MatrixXd &beta_lm,
   
 }
 
+//[[Rcpp::export]]
+SEXP match_val(const Rcpp::CharacterVector& names,
+               const Rcpp::NumericVector& values,
+               const Rcpp::CharacterVector& input) {
+  
+  std::unordered_map<Rcpp::String, double> nameMap;
+  
+  for (size_t i = 0; i < names.size(); ++i) {
+    nameMap[names[i]] = values[i];
+  }
+  
+  std::vector<double> result;
+  result.reserve(input.size());
+  
+  for (const auto& inp : input) {
+
+    auto it = nameMap.find(inp);
+    
+    if (it != nameMap.end()) {
+      result.push_back(it->second);
+    } else {
+      // this is like allow.new.levels in R
+      result.push_back(0);
+    }
+  }
+  
+  return Rcpp::wrap(result);
+}
