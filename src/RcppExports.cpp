@@ -11,39 +11,26 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// predict_zi
-SEXP predict_zi(Eigen::MatrixXd& beta_lm, Eigen::MatrixXd& beta_glm, Rcpp::List& u_lm, Rcpp::List& u_glm, Eigen::MatrixXd& design_mat_lm, Eigen::MatrixXd& design_mat_glm);
-RcppExport SEXP _saeczi_predict_zi(SEXP beta_lmSEXP, SEXP beta_glmSEXP, SEXP u_lmSEXP, SEXP u_glmSEXP, SEXP design_mat_lmSEXP, SEXP design_mat_glmSEXP) {
+// predict_cpp
+SEXP predict_cpp(const Eigen::MatrixXd& beta_lm, const Eigen::MatrixXd& beta_glm, const Rcpp::CharacterVector& names, const Rcpp::CharacterVector& dom_input, const Rcpp::List& u, const Eigen::MatrixXd& design_mat_lm, const Eigen::MatrixXd& design_mat_glm);
+RcppExport SEXP _saeczi_predict_cpp(SEXP beta_lmSEXP, SEXP beta_glmSEXP, SEXP namesSEXP, SEXP dom_inputSEXP, SEXP uSEXP, SEXP design_mat_lmSEXP, SEXP design_mat_glmSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type beta_lm(beta_lmSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type beta_glm(beta_glmSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type u_lm(u_lmSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type u_glm(u_glmSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type design_mat_lm(design_mat_lmSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type design_mat_glm(design_mat_glmSEXP);
-    rcpp_result_gen = Rcpp::wrap(predict_zi(beta_lm, beta_glm, u_lm, u_glm, design_mat_lm, design_mat_glm));
-    return rcpp_result_gen;
-END_RCPP
-}
-// match_val
-SEXP match_val(const Rcpp::CharacterVector& names, const Rcpp::NumericVector& values, const Rcpp::CharacterVector& input);
-RcppExport SEXP _saeczi_match_val(SEXP namesSEXP, SEXP valuesSEXP, SEXP inputSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type beta_lm(beta_lmSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type beta_glm(beta_glmSEXP);
     Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type names(namesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type values(valuesSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type input(inputSEXP);
-    rcpp_result_gen = Rcpp::wrap(match_val(names, values, input));
+    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type dom_input(dom_inputSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type u(uSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type design_mat_lm(design_mat_lmSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type design_mat_glm(design_mat_glmSEXP);
+    rcpp_result_gen = Rcpp::wrap(predict_cpp(beta_lm, beta_glm, names, dom_input, u, design_mat_lm, design_mat_glm));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_saeczi_predict_zi", (DL_FUNC) &_saeczi_predict_zi, 6},
-    {"_saeczi_match_val", (DL_FUNC) &_saeczi_match_val, 3},
+    {"_saeczi_predict_cpp", (DL_FUNC) &_saeczi_predict_cpp, 7},
     {NULL, NULL, 0}
 };
 

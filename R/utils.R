@@ -88,25 +88,18 @@ predict_zi <- function(.data,
   
   dom_ref <- .data[[domain_level]]
   B <- length(u)
+  nms <- names(u[[1]]$u_lm)
   
-  u_lm_ls <- vector(mode = "list", length = B)
-  u_glm_ls <- vector(mode= "list", length = B)
-  
-  # this is faster in R because of how fast lookup vectors are
-  for (b in seq_len(length(u))) {
-    u_lm_ls[[b]] <- u[[b]]$u_lm[dom_ref]
-    u_glm_ls[[b]] <- u[[b]]$u_glm[dom_ref]
-  }
-  
-  # res <- _predict_zi(beta_lm = beta_lm_mat,
-  #                    beta_glm = beta_glm_mat,
-  #                    u_lm = u_lm_ls,
-  #                    u_glm = u_glm_ls,
-  #                    design_mat_lm = design_mat_lm,
-  #                    design_mat_glm = design_mat_glm)
+
+  pixel_res <- predict_cpp(beta_lm = beta_lm_mat,
+                           beta_glm = beta_glm_mat,
+                           names = nms,
+                           dom_input = dom_ref,
+                           u = u,
+                           design_mat_lm = design_mat_lm,
+                           design_mat_glm = design_mat_glm) 
   
   # need to take mean of each column *by* domain_level
-  
   
   agg_fun <- function(x, grps = dom_ref) {
     aggregate(x ~ grps, FUN = mean, na.rm = TRUE)
