@@ -74,14 +74,14 @@ fit_zi <- function(samp_dat,
 }
 
 
-predict_zi <- function(.data,
-                       truth,
-                       domain_level,
-                       beta_lm_mat,
-                       beta_glm_mat,
-                       u,
-                       lin_X,
-                       log_X) {
+generate_preds <- function(.data,
+                           truth,
+                           domain_level,
+                           beta_lm_mat,
+                           beta_glm_mat,
+                           u,
+                           lin_X,
+                           log_X) {
   
   design_mat_lm <- model.matrix(~., .data[ ,lin_X])
   design_mat_glm <- model.matrix(~., .data[ ,log_X])
