@@ -80,7 +80,7 @@ unit_zi <- function(samp_dat,
   .data <- pop_dat[ ,c(all_preds, domain_level)]
   
   unit_level_preds <- setNames(
-    stats::predict(mod1, newdata = .data, allow.new.levels = TRUE) * stats::predict(mod2, newdata = .data, type = "response"),
+    stats::predict(mod1, newdata = .data, allow.new.levels = TRUE) * stats::predict(mod2, newdata = .data, allow.new.levels = TRUE, type = "response"),
     as.character(.data[ , domain_level, drop = T])
   )
   
@@ -101,6 +101,7 @@ unit_zi <- function(samp_dat,
       b_i = zi_model_coefs$b_i
     )
     
+    # new levels need to be set to zero here
     joined_pop_bi <- merge(
       x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
       y = params_and_domain,

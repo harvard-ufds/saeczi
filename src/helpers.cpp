@@ -64,13 +64,13 @@ double sigmoid(double x) {
 
 
 //[[Rcpp::export]]
-SEXP predict_cpp(const Eigen::MatrixXd &beta_lm,
-                 const Eigen::MatrixXd &beta_glm,
-                 const Rcpp::CharacterVector &names,
-                 const Rcpp::CharacterVector &dom_input,
-                 const Rcpp::List &u,
-                 const Eigen::MatrixXd &design_mat_lm,
-                 const Eigen::MatrixXd &design_mat_glm) {
+SEXP unit_preds_calc(const Eigen::MatrixXd &beta_lm,
+                     const Eigen::MatrixXd &beta_glm,
+                     const Rcpp::CharacterVector &names,
+                     const Rcpp::CharacterVector &dom_input,
+                     const Rcpp::List &u,
+                     const Eigen::MatrixXd &design_mat_lm,
+                     const Eigen::MatrixXd &design_mat_glm) {
 
   int B = u.size();
   

@@ -91,13 +91,13 @@ generate_preds <- function(.data,
   nms <- names(u[[1]]$u_lm)
   
 
-  pixel_res <- predict_cpp(beta_lm = beta_lm_mat,
-                           beta_glm = beta_glm_mat,
-                           names = nms,
-                           dom_input = dom_ref,
-                           u = u,
-                           design_mat_lm = design_mat_lm,
-                           design_mat_glm = design_mat_glm) 
+  pixel_res <- unit_preds_calc(beta_lm = beta_lm_mat,
+                               beta_glm = beta_glm_mat,
+                               names = nms,
+                               dom_input = dom_ref,
+                               u = u,
+                               design_mat_lm = design_mat_lm,
+                               design_mat_glm = design_mat_glm) 
   
   # need to take mean of each column *by* domain_level
   
