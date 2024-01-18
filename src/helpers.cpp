@@ -4,8 +4,6 @@
 #include <cmath>
 #include <Rcpp.h>
 #include <RcppEigen.h>
-using namespace Eigen;
-using namespace Rcpp;
 
 Eigen::VectorXd match_val(const Rcpp::CharacterVector &names,
                           const Rcpp::NumericVector &values,
@@ -64,7 +62,7 @@ double sigmoid(double x) {
 
 
 //[[Rcpp::export]]
-SEXP unit_preds_calc(const Eigen::MatrixXd &beta_lm,
+SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
                      const Eigen::MatrixXd &beta_glm,
                      const Rcpp::CharacterVector &names,
                      const Rcpp::CharacterVector &dom_input,
@@ -83,7 +81,38 @@ SEXP unit_preds_calc(const Eigen::MatrixXd &beta_lm,
   
   Eigen::MatrixXd unit_preds = pred_lm.cwiseProduct(pred_glm);
   
-  return Rcpp::wrap(unit_preds);
+  std::vector<std::string> dom_input_std(dom_input.size());
+  for (int i = 0; i < dom_input.size(); ++i) {
+    dom_input_std[i] = Rcpp::as<std::string>(dom_input[i]);
+  }
+  
+  std::sort(dom_input_std.begin(), dom_input_std.end());
+  auto unique_doms = std::unique(dom_input_std.begin(), dom_input_std.end());
+  dom_input_std.erase(unique_doms, dom_input_std.end());
+  
+  int n_doms = dom_input_std.size();
+  
+  Eigen::MatrixXd result(n_doms, unit_preds.cols());
+  
+  std::unordered_map<std::string, std::vector<int>> dom_id_map;
+  for (int i = 0; i < n_doms; ++i) {
+    dom_id_map[dom_input_std[i]].push_back(i);
+  }
+  
+  for (int i = 0; i < n_doms; ++i) {
+    const std::vector<int>& dom_ids = dom_id_map[dom_input_std[i]];
+
+    for (int col = 0; col < unit_preds.cols(); ++col) {
+      Eigen::VectorXd colData = unit_preds.col(col);
+      double groupMeans = colData.transpose().eval().segment(dom_ids[0], dom_ids.size()).mean();
+      result(i, col) = groupMeans;
+    }
+  }
+  
+  Rcpp::CharacterVector row_doms = Rcpp::wrap(dom_input_std);
+  Rcpp::List out = Rcpp::List::create(result, row_doms);
+  
+  return Rcpp::wrap(out);
   
 }
 

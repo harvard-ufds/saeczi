@@ -91,33 +91,24 @@ generate_preds <- function(.data,
   nms <- names(u[[1]]$u_lm)
   
 
-  pixel_res <- unit_preds_calc(beta_lm = beta_lm_mat,
-                               beta_glm = beta_glm_mat,
-                               names = nms,
-                               dom_input = dom_ref,
-                               u = u,
-                               design_mat_lm = design_mat_lm,
-                               design_mat_glm = design_mat_glm) 
-  
-  # need to take mean of each column *by* domain_level
-  
-  agg_fun <- function(x, grps = dom_ref) {
-    aggregate(x ~ grps, FUN = mean, na.rm = TRUE)
-  }
-  
-  colwise_means_ls <- apply(pixel_res, 2, FUN = agg_fun) 
-  colwise_means <- do.call("rbind", colwise_means_ls)
+  dom_res <- dom_preds_calc(beta_lm = beta_lm_mat,
+                            beta_glm = beta_glm_mat,
+                            names = nms,
+                            dom_input = dom_ref,
+                            u = u,
+                            design_mat_lm = design_mat_lm,
+                            design_mat_glm = design_mat_glm) 
   
   
-  squared_error <- merge(x = colwise_means,
-                         y = truth,
-                         by.x = "grps",
-                         by.y = "domain",
-                         all.x = TRUE) |>
-    transform(sq_error = (x - domain_est)^2)
-
+  truth_ordered <- truth[order(match(truth$domain, dom_res[[2]])), ]
+  truth_vec <- truth_ordered$domain_est
   
-  res_doms <- aggregate(sq_error ~ grps, data = squared_error, FUN = function(x) sum(x) / B)
+  mean_sq_err <- (dom_res[[1]] - truth_vec)^2 |> rowMeans()
+  
+  res_doms <- data.frame(
+    domain = truth_ordered$domain,
+    mse = mean_sq_err
+  )
   
   return(res_doms)
   
