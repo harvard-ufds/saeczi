@@ -60,15 +60,42 @@ double sigmoid(double x) {
   return 1.0 / (1.0 + std::exp(-x));
 }
 
+void squish_rows(Eigen::MatrixXd &unit_preds_mat,
+                 Eigen::MatrixXd &result_mat,
+                 std::vector<std::string> &unique_doms,
+                 std::unordered_map<std::string, std::vector<int>> &doms_map) {
+  
+  int n_rows = unique_doms.size();
+  int n_cols = unit_preds_mat.cols();
+  
+  for (int i = 0; i < n_rows; ++i) {
+    
+    const std::vector<int>& dom_ids = doms_map[unique_doms[i]];
+    
+    // subset the matrix to only include rows from dom_ids
+    Eigen::MatrixXd subset(dom_ids.size(), n_cols);
+    for (int d = 0; d < dom_ids.size(); ++d) {
+      subset.row(d) = unit_preds_mat.row(dom_ids[d]);
+    }
+
+    //Eigen::MatrixXd subset = unit_preds_mat.block(start, 0, end - start + 1, n_cols);
+    Eigen::MatrixXd squished_subset = subset.colwise().mean();
+    
+    result_mat.block(i, 0, 1, n_cols) = squished_subset;
+    
+  }
+  
+}
+
 
 //[[Rcpp::export]]
 SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
-                     const Eigen::MatrixXd &beta_glm,
-                     const Rcpp::CharacterVector &names,
-                     const Rcpp::CharacterVector &dom_input,
-                     const Rcpp::List &u,
-                     const Eigen::MatrixXd &design_mat_lm,
-                     const Eigen::MatrixXd &design_mat_glm) {
+                    const Eigen::MatrixXd &beta_glm,
+                    const Rcpp::CharacterVector &names,
+                    const Rcpp::CharacterVector &dom_input,
+                    const Rcpp::List &u,
+                    const Eigen::MatrixXd &design_mat_lm,
+                    const Eigen::MatrixXd &design_mat_glm) {
 
   int B = u.size();
   
@@ -99,15 +126,11 @@ SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
     dom_id_map[dom_input_std[i]].push_back(i);
   }
   
-  for (int i = 0; i < n_doms; ++i) {
-    const std::vector<int>& dom_ids = dom_id_map[dom_input_std[i]];
-
-    for (int col = 0; col < unit_preds.cols(); ++col) {
-      Eigen::VectorXd colData = unit_preds.col(col);
-      double groupMeans = colData.transpose().eval().segment(dom_ids[0], dom_ids.size()).mean();
-      result(i, col) = groupMeans;
-    }
-  }
+  // do this in a function
+  squish_rows(unit_preds,
+              result,
+              dom_input_std,
+              dom_id_map);
   
   Rcpp::CharacterVector row_doms = Rcpp::wrap(dom_input_std);
   Rcpp::List out = Rcpp::List::create(result, row_doms);
