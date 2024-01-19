@@ -228,14 +228,14 @@ unit_zi <- function(samp_dat,
       u_full <- res |>
         map(.f = ~ list(u_lm = .x$params$u_lm, u_glm = .x$params$u_glm))
       
-      preds_full <- generate_preds(.data = pop_dat,
-                                   truth = boot_truth,
-                                   domain_level = domain_level,
-                                   beta_lm_mat = beta_lm_mat,
-                                   beta_glm_mat = beta_glm_mat,
-                                   u = u_full,
-                                   lin_X = lin_X,
-                                   log_X = log_X)
+      preds_full <- generate_mse(.data = pop_dat,
+                                 truth = boot_truth,
+                                 domain_level = domain_level,
+                                 beta_lm_mat = beta_lm_mat,
+                                 beta_glm_mat = beta_glm_mat,
+                                 u = u_full,
+                                 lin_X = lin_X,
+                                 log_X = log_X)
      
       
       log_lst <- res |>
@@ -274,14 +274,14 @@ unit_zi <- function(samp_dat,
       u_full <- res |>
         map(.f = ~ list(u_lm = .x$params$u_lm, u_glm = .x$params$u_glm))
       
-      preds_full <- generate_preds(.data = pop_dat,
-                                   truth = boot_truth,
-                                   domain_level = domain_level,
-                                   beta_lm_mat = beta_lm_mat,
-                                   beta_glm_mat = beta_glm_mat,
-                                   u = u_full,
-                                   lin_X = lin_X,
-                                   log_X = log_X)
+      preds_full <- generate_mse(.data = pop_dat,
+                                 truth = boot_truth,
+                                 domain_level = domain_level,
+                                 beta_lm_mat = beta_lm_mat,
+                                 beta_glm_mat = beta_glm_mat,
+                                 u = u_full,
+                                 lin_X = lin_X,
+                                 log_X = log_X)
 
       
       log_lst <- res |>
