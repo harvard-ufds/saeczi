@@ -91,27 +91,26 @@ generate_preds <- function(.data,
   nms <- names(u[[1]]$u_lm)
   
 
-  dom_res <- dom_preds_calc(beta_lm = beta_lm_mat,
-                            beta_glm = beta_glm_mat,
-                            names = nms,
-                            dom_input = dom_ref,
-                            u = u,
-                            design_mat_lm = design_mat_lm,
-                            design_mat_glm = design_mat_glm) 
+  dom_res_wide <- dom_preds_calc(beta_lm = beta_lm_mat,
+                                 beta_glm = beta_glm_mat,
+                                 names = nms,
+                                 dom_input = dom_ref,
+                                 u = u,
+                                 design_mat_lm = design_mat_lm,
+                                 design_mat_glm = design_mat_glm) 
   
-  
-  truth_ordered <- truth[order(match(truth$domain, dom_res[[2]])), ]
+  truth_ordered <- truth[order(match(truth$domain, dom_res_wide[[2]])), ]
   truth_vec <- truth_ordered$domain_est
-  
-  mean_sq_err <- (dom_res[[1]] - truth_vec)^2 |> rowMeans()
-  
+
+  mean_sq_err <- (dom_res_wide[[1]] - truth_vec)^2 |> rowMeans()
+
   res_doms <- data.frame(
     domain = truth_ordered$domain,
     mse = mean_sq_err
   )
-  
+
   return(res_doms)
-  
+
 }
 
 
