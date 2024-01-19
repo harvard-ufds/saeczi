@@ -20,6 +20,7 @@ LazyData: true
 Imports: 
     stats,
     dplyr,
+    stringr,
     lme4,
     purrr,
     progressr, 
