@@ -4,12 +4,16 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
   
   num_plots <- dplyr::count(samp, !!rlang::sym(dom_nm))
   diff <- unique(pop$domain)[!unique(pop$domain) %in% unique(samp[[dom_nm]])]
-  to_append <- data.frame(
-    doms = diff,
-    n = rep(0, length(diff))
-  )
-  colnames(to_append) <- c(dom_nm, "n")
-  num_plots <- rbind(num_plots, to_append)
+  if (length(diff) != 0) {
+    to_append <- data.frame(
+      doms = diff,
+      n = rep(0, length(diff))
+    )
+    colnames(to_append) <- c(dom_nm, "n")
+    num_plots <- rbind(num_plots, to_append)
+  }
+  
+  print(num_plots)
 
   # our boot_pop_data has column name domain as its group variable
   setup <- dplyr::count(pop, domain) |> 
@@ -112,7 +116,8 @@ generate_mse <- function(.data,
   truth_ordered <- truth[order(match(truth$domain, dom_res_wide[[2]])), ]
   truth_vec <- truth_ordered$domain_est
 
-  mean_sq_err <- (dom_res_wide[[1]] - truth_vec)^2 |> rowMeans(na.rm = TRUE)
+  mean_sq_err <- (dom_res_wide[[1]] - truth_vec)^2 |> 
+    rowMeans(na.rm = TRUE)
 
   res_doms <- data.frame(
     domain = truth_ordered$domain,
@@ -187,7 +192,7 @@ boot_rep <- function(boot_samp,
                      domain_level,
                      boot_lin_formula,
                      boot_log_formula) {
-  
+
   # capture warnings and messages silently when bootstrapping
   fit_zi_capture <- capture_all(fit_zi)
   
