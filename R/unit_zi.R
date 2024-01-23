@@ -131,7 +131,7 @@ unit_zi <- function(samp_dat,
       )
     )
     # tweak for allowing new levels
-    pop_doms <- unique(popdat[[domain_level]])
+    pop_doms <- unique(pop_dat[[domain_level]])
     all_doms <- unique(pop_doms, zi_model_coefs$domain_levels)
     area_random_errors <- data.frame(
       dom = all_doms,

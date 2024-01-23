@@ -1,6 +1,7 @@
 # fast samp-by-grp
 samp_by_grp <- function(samp, pop, dom_nm, B) {
   
+  
   num_plots <- dplyr::count(samp, !!rlang::sym(dom_nm))
   diff <- unique(pop$domain)[!unique(pop$domain) %in% unique(samp[[dom_nm]])]
   to_append <- data.frame(
