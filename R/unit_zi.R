@@ -107,7 +107,9 @@ unit_zi <- function(samp_dat,
       y = params_and_domain,
       by = "dom",
       all.x = TRUE
-    )
+    ) 
+    
+    joined_pop_bi[is.na(joined_pop_bi$b_i), "b_i"] <- 0
     
     x_log_matrix <- model.matrix(
       as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
@@ -128,11 +130,13 @@ unit_zi <- function(samp_dat,
         sd = sqrt(zi_model_coefs$sig2_eps_hat)
       )
     )
-    
+    # tweak for allowing new levels
+    pop_doms <- unique(popdat[[domain_level]])
+    all_doms <- unique(pop_doms, zi_model_coefs$domain_levels)
     area_random_errors <- data.frame(
-      dom = zi_model_coefs$domain_levels,
+      dom = all_doms,
       area_random_errors = rnorm(
-        length(zi_model_coefs$domain_levels),
+        length(all_doms),
         mean = 0,
         sd = sqrt(zi_model_coefs$sig2_mu_hat)
       )

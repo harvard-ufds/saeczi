@@ -2,6 +2,15 @@
 samp_by_grp <- function(samp, pop, dom_nm, B) {
   
   num_plots <- dplyr::count(samp, !!rlang::sym(dom_nm))
+  diff <- unique(pop$domain)[!unique(pop$domain) %in% unique(samp[[dom_nm]])]
+  to_append <- data.frame(
+    doms = diff,
+    n = rep(0, length(diff))
+  )
+  colnames(to_append) <- c(dom_nm, "n")
+  num_plots <- rbind(num_plots, to_append)
+  
+  print(num_plots)
   # our boot_pop_data has column name domain as its group variable
   setup <- dplyr::count(pop, domain) |> 
     dplyr::left_join(num_plots, by = c(domain = dom_nm)) |>
