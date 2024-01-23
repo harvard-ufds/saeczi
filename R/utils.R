@@ -99,10 +99,11 @@ generate_mse <- function(.data,
                                  design_mat_lm = design_mat_lm,
                                  design_mat_glm = design_mat_glm) 
   
+  
   truth_ordered <- truth[order(match(truth$domain, dom_res_wide[[2]])), ]
   truth_vec <- truth_ordered$domain_est
 
-  mean_sq_err <- (dom_res_wide[[1]] - truth_vec)^2 |> rowMeans()
+  mean_sq_err <- (dom_res_wide[[1]] - truth_vec)^2 |> rowMeans(na.rm = TRUE)
 
   res_doms <- data.frame(
     domain = truth_ordered$domain,
