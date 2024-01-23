@@ -2,7 +2,7 @@
 
 S3method(print,zi_mod)
 S3method(summary,zi_mod)
-export(unit_zi)
+export(saeczi)
 import(stats)
 importFrom(Rcpp,sourceCpp)
 importFrom(furrr,furrr_options)

@@ -20,21 +20,21 @@
 #'
 #' The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
 #' as well as the predictor variables for the function to work.
-#' @export unit_zi
+#' @export saeczi
 #' @import stats
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options future_map2
 #' @importFrom purrr map map2 map_dfr
 #' @importFrom methods is
 
-unit_zi <- function(samp_dat,
-                    pop_dat,
-                    lin_formula,
-                    log_formula = lin_formula,
-                    domain_level,
-                    B = 100,
-                    mse_est = FALSE,
-                    parallel = FALSE) {
+saeczi <- function(samp_dat,
+                   pop_dat,
+                   lin_formula,
+                   log_formula = lin_formula,
+                   domain_level,
+                   B = 100,
+                   mse_est = FALSE,
+                   parallel = FALSE) {
   
   funcCall <- match.call() 
   
@@ -367,11 +367,5 @@ summary.zi_mod <- function(object, ...) {
   
 }
 
-#' #' @export
-#' print.summary.zi_mod <- function(x, ...) {
-#'   
-#'   
-#'   
-#' }
 
 
