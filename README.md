@@ -1,19 +1,21 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+# saeczi
+
+### (Small Area Estimation for Continuous Zero Inflated data)
+
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-# saeczi
-
-### (Small Area Estimation for Continous Zero Inflated data)
+## Overview
 
 `saeczi` is an R package that implements a small area estimator that
 uses a two-stage modeling approach for zero-inflated response variables.
 In particular, we are working with variables that follow a
 semi-continuous distribution with a mixture of zeroes and positive
-continuously distributed values. An example can be seen below:
+continuously distributed values. An example can be seen below.
 
 ![](README-zi-plot-1.png)<!-- -->
 
@@ -36,35 +38,61 @@ You can install the developmental version of `saeczi` from GitHub with:
 pak::pkg_install("harvard-ufds/saeczi")
 ```
 
-## Example
+## Usage
 
-We’ll use the internal package datasets to show an example of how to use
-`saeczi`.
+We’ll use the internal package data to show an example of how to use
+`saeczi`. The two data sets contained within the package contain example
+forestry data collected by the Forestry Inventory and Analysis (FIA)
+research program.
+
+- `saeczi::samp`: Example FIA plot-level sample data for each county in
+  Oregon.
+- `saeczi::pop`: Example FIA pixel level population auxiliary data for
+  each county in Oregon.
+
+The main response variable included in `samp` is above ground live
+biomass and our small areas in this case are the counties in Oregon. To
+keep things simple we will use tree canopy cover (tcc16) and elevation
+(elev) as our predictors in both of the models. We can use `saeczi` to
+get estimates for the mean biomass in each county as well as the
+corresponding bootstrapped (B = 100) MSE estimate as follows.
 
 ``` r
 library(saeczi)
 data(pop)
 data(samp)
 
-lin_formula <- DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev
-
-set.seed(5)
 result <- unit_zi(samp_dat = samp,
                   pop_dat = pop, 
                   lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
                   log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
                   domain_level = "COUNTYFIPS",
                   mse_est = TRUE,
-                  B = 100,
+                  B = 500,
                   parallel = FALSE)
+```
 
+The function returns the original call, a data frame containing the
+estimates, a log of any modeling warnings and messages from the
+bootstrap procedure, as well as the linear and logistic model objects
+used to compute the estimates.
 
+``` r
+names(result)
+#> [1] "call"          "res"           "bootstrap_log" "lin_mod"      
+#> [5] "log_mod"
+```
+
+As there are 36 total counties in Oregon, we will just look at the first
+few rows of the results:
+
+``` r
 result$res |> head()
 #>   domain       mse      est
-#> 1  41001  61.01495 14.85495
-#> 2  41003  87.99835 97.74967
-#> 3  41005 176.88206 86.02207
-#> 4  41007 344.48027 76.24752
-#> 5  41009  76.81402 70.28624
-#> 6  41011  80.75565 87.65072
+#> 1  41001 348.52996 14.85495
+#> 2  41003  10.02939 97.74967
+#> 3  41005 529.20263 86.02207
+#> 4  41007 245.04692 76.24752
+#> 5  41009 481.13961 70.28624
+#> 6  41011 269.96902 87.65072
 ```
