@@ -5,9 +5,9 @@
 [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-## saeczi
+# saeczi
 
-#### (Small Area Estimation for Continous Zero Inflated data)
+### (Small Area Estimation for Continous Zero Inflated data)
 
 `saeczi` is an R package that implements a small area estimator that
 uses a two-stage modeling approach for zero-inflated response variables.

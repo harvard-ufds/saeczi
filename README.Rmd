@@ -17,8 +17,8 @@ knitr::opts_chunk$set(
   <!-- badges: end -->
 
 
-## saeczi
-#### (Small Area Estimation for Continous Zero Inflated data) 
+# saeczi
+### (Small Area Estimation for Continous Zero Inflated data) 
 
 `saeczi` is an R package that implements a small area estimator that uses a two-stage modeling approach for zero-inflated response variables. In particular, we are working with variables that follow a semi-continuous distribution with a mixture of zeroes and positive continuously distributed values. An example can be seen below:
 
