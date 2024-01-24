@@ -9,10 +9,10 @@ Eigen::VectorXd match_val(const Rcpp::CharacterVector &names,
                           const Rcpp::NumericVector &values,
                           const Rcpp::CharacterVector &input) {
   
-  std::unordered_map<Rcpp::String, double> nameMap;
+  std::unordered_map<Rcpp::String, double> name_map;
   
   for (size_t i = 0; i < names.size(); ++i) {
-    nameMap[names[i]] = values[i];
+    name_map[names[i]] = values[i];
   }
   
   std::vector<double> result;
@@ -20,9 +20,9 @@ Eigen::VectorXd match_val(const Rcpp::CharacterVector &names,
   
   for (const auto& i : input) {
     
-    auto it = nameMap.find(i);
+    auto it = name_map.find(i);
     
-    if (it != nameMap.end()) {
+    if (it != name_map.end()) {
       result.push_back(it->second);
     } else {
       // this is like allow.new.levels in R
@@ -101,29 +101,35 @@ SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
   Eigen::MatrixXd pred_lm = (design_mat_lm * beta_lm.transpose());
   Eigen::MatrixXd pred_glm = (design_mat_glm * beta_glm.transpose());
   
-  add_u(names, u, dom_input, pred_lm, pred_glm, B);
+  add_u(names,
+        u,
+        dom_input,
+        pred_lm,
+        pred_glm,
+        B);
   
-  pred_glm = pred_glm.array().unaryExpr([](double x) {return sigmoid(x); });
+  pred_glm = pred_glm.unaryExpr(&sigmoid);
   
   Eigen::MatrixXd unit_preds = pred_lm.cwiseProduct(pred_glm);
   
+  // just pass unique vector straight in
   std::vector<std::string> dom_input_std(dom_input.size());
   for (int i = 0; i < dom_input.size(); ++i) {
     dom_input_std[i] = Rcpp::as<std::string>(dom_input[i]);
   }
-
+  
   std::sort(dom_input_std.begin(), dom_input_std.end());
   auto unique_doms = std::unique(dom_input_std.begin(), dom_input_std.end());
   dom_input_std.erase(unique_doms, dom_input_std.end());
 
   int n_doms = dom_input_std.size();
 
-  Eigen::MatrixXd result(n_doms, unit_preds.cols());
-
   std::unordered_map<std::string, std::vector<int>> dom_id_map;
   for (int i = 0; i < dom_input.size(); ++i) {
     dom_id_map[dom_input_std[i]].push_back(i);
   }
+  
+  Eigen::MatrixXd result(n_doms, unit_preds.cols());
 
   squish_rows(unit_preds,
               result,

@@ -12,8 +12,6 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
     colnames(to_append) <- c(dom_nm, "n")
     num_plots <- rbind(num_plots, to_append)
   }
-  
-  print(num_plots)
 
   # our boot_pop_data has column name domain as its group variable
   setup <- dplyr::count(pop, domain) |> 
@@ -102,7 +100,6 @@ generate_mse <- function(.data,
   dom_ref <- .data[[domain_level]]
   B <- length(u)
   nms <- names(u[[1]]$u_lm)
-  
 
   dom_res_wide <- dom_preds_calc(beta_lm = beta_lm_mat,
                                  beta_glm = beta_glm_mat,
