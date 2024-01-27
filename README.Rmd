@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 
 `saeczi` is an R package that implements a small area estimator that uses a two-stage modeling approach for zero-inflated response variables. In particular, we are working with variables that follow a semi-continuous distribution with a mixture of zeroes and positive continuously distributed values. An example can be seen below.
 
-```{r zi-plot, dpi = 300, fig.width = 10, fig.height=6, echo=F, message=F, warning=F}
+```{r zi-plot, dpi = 600, fig.width = 10, fig.height=6, echo=F, message=F, warning=F}
 set.seed(6)
 library(tidyverse)
 
@@ -76,7 +76,7 @@ We'll use the internal package data to show an example of how to use `saeczi`. T
 - `saeczi::samp`: Example FIA plot-level sample data for each county in Oregon.
 - `saeczi::pop`: Example FIA pixel level population auxiliary data for each county in Oregon.
 
-The main response variable included in `samp` is above ground live biomass and our small areas in this case are the counties in Oregon. To keep things simple we will use tree canopy cover (tcc16) and elevation (elev) as our predictors in both of the models. We can use `saeczi` to get estimates for the mean biomass in each county as well as the corresponding bootstrapped (B = 100) MSE estimate as follows.
+The main response variable included in `samp` is above ground live biomass and our small areas in this case are the counties in Oregon. To keep things simple we will use tree canopy cover (tcc16) and elevation (elev) as our predictors in both of the models. We can use `saeczi` to get estimates for the mean biomass in each county as well as the corresponding bootstrapped (B = 500) MSE estimate as follows.
 
 ```{r, warning=FALSE, message=FALSE}
 library(saeczi)
@@ -104,5 +104,24 @@ As there are 36 total counties in Oregon, we will just look at the first few row
 
 ```{r}
 result$res |> head()
+```
+
+This output format allows for easy results plotting
+
+```{r, dpi = 600, echo = FALSE, warning = FALSE, message=FALSE}
+library(tidyverse)
+result$res |>
+  mutate(domain = fct_reorder(domain, est)) |> 
+  ggplot() +
+  geom_point(aes(x = domain, y = est), alpha = 0.7, size = 0.8) +
+  geom_errorbar(aes(x = domain,
+                    ymin = est - 1.96*sqrt(mse),
+                    ymax = est + 1.96*sqrt(mse)),
+                color = "midnightblue") +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 45, vjust = 0.7)
+  ) +
+  labs(x = "County", y = "Biomass")
 ```
 

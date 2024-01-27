@@ -55,7 +55,7 @@ biomass and our small areas in this case are the counties in Oregon. To
 keep things simple we will use tree canopy cover (tcc16) and elevation
 (elev) as our predictors in both of the models. We can use `saeczi` to
 get estimates for the mean biomass in each county as well as the
-corresponding bootstrapped (B = 100) MSE estimate as follows.
+corresponding bootstrapped (B = 500) MSE estimate as follows.
 
 ``` r
 library(saeczi)
@@ -96,3 +96,7 @@ result$res |> head()
 #> 5  41009 481.13961 70.28624
 #> 6  41011 269.96902 87.65072
 ```
+
+This output format allows for easy results plotting
+
+![](README-unnamed-chunk-5-1.png)<!-- -->
