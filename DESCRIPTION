@@ -9,8 +9,7 @@ Authors@R: c(person("Josh", "Yamamoto", role = c("aut", "cre"),
              person("Julian", "Schmitt", role = "aut"),
              person("Niels", "Korsgaard", role = "aut"),
              person("Kelly", "McConville", role = "aut"),
-             person("Kate", "Hu", role = "aut")
-            )
+             person("Kate", "Hu", role = "aut"))
 Maintainer: Josh Yamamoto <joshuayamamoto5@gmail.com>
 Description: A package that simplifies the process of fitting a zero-inflated estimator
     onto a dataset. This estimator is a combination of a linear regression model 
@@ -23,17 +22,21 @@ LazyData: true
 Imports: 
     stats,
     dplyr,
+    stringr,
     lme4,
     purrr,
     progressr, 
     furrr,
     future,
     methods,
-    rlang
-RoxygenNote: 7.2.3
+    rlang,
+    Rcpp
+RoxygenNote: 7.3.1
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Depends: 
-    R (>= 2.10),
-
+    R (>= 2.10)
+LinkingTo:
+    Rcpp,
+    RcppEigen
