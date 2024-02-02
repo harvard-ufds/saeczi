@@ -30,7 +30,8 @@ Imports:
     future,
     methods,
     rlang,
-    Rcpp
+    Rcpp,
+    cli
 RoxygenNote: 7.3.1
 Suggests: 
     testthat (>= 3.0.0)
@@ -39,4 +40,5 @@ Depends:
     R (>= 2.10)
 LinkingTo:
     Rcpp,
-    RcppEigen
+    RcppEigen,
+    cli

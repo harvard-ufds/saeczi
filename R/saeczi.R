@@ -272,9 +272,6 @@ saeczi <- function(samp_dat,
       
     } else {
       
-      cat("creating bootstraps...")
-      cat("\n")
-      
       res <- 
         purrr::map(.x = boot_samp_ls,
                    .f = \(.x) { 
@@ -282,7 +279,12 @@ saeczi <- function(samp_dat,
                               domain_level,
                               boot_lin_formula,
                               boot_log_formula)
-                   })
+                   },
+                   .progress = list(
+                     type = "iterator",
+                     format = "Fitting to Bootstraps {cli::pb_bar} {cli::pb_percent}",
+                     clear = TRUE
+                   ))
       
       beta_lm_mat <- res |>
         map_dfr(.f = ~ .x$params$beta_lm) |>
@@ -304,8 +306,6 @@ saeczi <- function(samp_dat,
       # down to positive response values
       u_lm[is.na(u_lm)] <- 0
       
-      cat("estimating mse...")
-      cat("\n")
       preds_full <- generate_mse(.data = boot_pop_data,
                                  truth = boot_truth,
                                  domain_level = domain_level,
@@ -315,7 +315,6 @@ saeczi <- function(samp_dat,
                                  u_glm = u_glm,
                                  lin_X = lin_X,
                                  log_X = log_X)
-      
       
       log_lst <- res |>
         map(.f = ~ .x$log)
