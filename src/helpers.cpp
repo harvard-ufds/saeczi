@@ -22,7 +22,7 @@ SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
   Eigen::MatrixXd result = Eigen::MatrixXd::Zero(J, B);
   
   SEXP bar = PROTECT(cli_progress_bar(J, NULL));
-  cli_progress_set_format(bar, "Estimating MSE {cli::pb_bar} {cli::pb_percent}");
+  cli_progress_set_format(bar, "   - Estimating MSE {cli::pb_percent}");
   for (int j = 0; j < J; ++j) {
 
     Rcpp::List dmats_j = design_mats[j];

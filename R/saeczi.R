@@ -53,6 +53,11 @@ saeczi <- function(samp_dat,
     message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
   }
   
+  w <- options("width")$width
+  header <- paste0(rep("=", w), collapse = "")
+  cat(cli::make_ansi_style("steelblue")(header), "\n", sep = "")
+  cat(cli::style_bold(cli::col_black("\u2022 Fitting Models...")))
+  cat("\n")
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
   
@@ -90,6 +95,9 @@ saeczi <- function(samp_dat,
   original_pred <- zi_domain_preds
   
   if (mse_est) {
+    
+    cat(cli::style_bold(cli::col_black("\u2022 Beginning Bootstrap...")))
+    cat("\n")
     
     zi_model_coefs <- mse_coefs(
       original_out$lmer,
@@ -271,7 +279,9 @@ saeczi <- function(samp_dat,
       }) 
       
     } else {
-      
+      task_text <- "  - Fitting to Bootstrap samples"
+      task_done <- paste0(task_text, cli::make_ansi_style("green4")(" \u2713"))
+      reset <- paste0(rep(" ", nchar(task_text)), collapse = " ")
       res <- 
         purrr::map(.x = boot_samp_ls,
                    .f = \(.x) { 
@@ -282,10 +292,12 @@ saeczi <- function(samp_dat,
                    },
                    .progress = list(
                      type = "iterator",
-                     format = "Fitting to Bootstraps {cli::pb_bar} {cli::pb_percent}",
+                     format = "   - Fitting to Bootstrap samples {cli::pb_percent}",
                      clear = TRUE
                    ))
       
+      cat("\r", reset, "\r", " ", task_done, "\n", sep = "")
+    
       beta_lm_mat <- res |>
         map_dfr(.f = ~ .x$params$beta_lm) |>
         as.matrix()
@@ -306,6 +318,9 @@ saeczi <- function(samp_dat,
       # down to positive response values
       u_lm[is.na(u_lm)] <- 0
       
+      task_text <- "  - Estimating MSE"
+      task_done <- paste0(task_text, cli::make_ansi_style("green4")(" \u2713"))
+      reset <- paste0(rep(" ", nchar(task_text)), collapse = " ")
       preds_full <- generate_mse(.data = boot_pop_data,
                                  truth = boot_truth,
                                  domain_level = domain_level,
@@ -316,6 +331,7 @@ saeczi <- function(samp_dat,
                                  lin_X = lin_X,
                                  log_X = log_X)
       
+      cat("\r", reset, "\r", " ", task_done, "\n", sep = "")
       log_lst <- res |>
         map(.f = ~ .x$log)
       
@@ -323,6 +339,9 @@ saeczi <- function(samp_dat,
       
     }
     
+    cat(cli::style_bold(cli::col_black("\u2022 Compiling Results...")))
+    cat("\n")
+    Sys.sleep(0.5)
     final_df <- setNames(
       boot_res[[1]],
       c("domain", "mse")
@@ -348,6 +367,7 @@ saeczi <- function(samp_dat,
     bootstrap_log <- NA
     
   }
+
   
   out <- list(
     call = funcCall,
@@ -356,6 +376,7 @@ saeczi <- function(samp_dat,
     lin_mod = original_out$lmer,
     log_mod = original_out$glmer
   )
+  cat(cli::make_ansi_style("steelblue")(header), "\n", sep = "")
   
   structure(out, class = "zi_mod")
   
