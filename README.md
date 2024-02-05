@@ -62,14 +62,16 @@ library(saeczi)
 data(pop)
 data(samp)
 
-result <- unit_zi(samp_dat = samp,
-                  pop_dat = pop, 
-                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
-                  log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
-                  domain_level = "COUNTYFIPS",
-                  mse_est = TRUE,
-                  B = 500,
-                  parallel = FALSE)
+result <- saeczi(samp_dat = samp,
+                 pop_dat = pop, 
+                 lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
+                 log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
+                 domain_level = "COUNTYFIPS",
+                 mse_est = TRUE,
+                 B = 500,
+                 parallel = FALSE)
+#> creating bootstraps...
+#> estimating mse...
 ```
 
 The function returns the original call, a data frame containing the
@@ -89,14 +91,14 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   domain       mse      est
-#> 1  41001 348.52996 14.85495
-#> 2  41003  10.02939 97.74967
-#> 3  41005 529.20263 86.02207
-#> 4  41007 245.04692 76.24752
-#> 5  41009 481.13961 70.28624
-#> 6  41011 269.96902 87.65072
+#> 1  41001 374.82344 14.85495
+#> 2  41003  10.97949 97.74967
+#> 3  41005 708.82223 86.02207
+#> 4  41007 251.39503 76.24752
+#> 5  41009 382.08787 70.28624
+#> 6  41011  77.06537 87.65072
 ```
 
 This output format allows for easy results plotting
 
-![](README-unnamed-chunk-5-1.png)<!-- -->
+![](README-res_plot-1.png)<!-- -->

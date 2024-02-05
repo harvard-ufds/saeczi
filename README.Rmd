@@ -83,14 +83,14 @@ library(saeczi)
 data(pop)
 data(samp)
 
-result <- unit_zi(samp_dat = samp,
-                  pop_dat = pop, 
-                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
-                  log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
-                  domain_level = "COUNTYFIPS",
-                  mse_est = TRUE,
-                  B = 500,
-                  parallel = FALSE)
+result <- saeczi(samp_dat = samp,
+                 pop_dat = pop, 
+                 lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
+                 log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
+                 domain_level = "COUNTYFIPS",
+                 mse_est = TRUE,
+                 B = 500,
+                 parallel = FALSE)
 ```
 
 
@@ -108,7 +108,7 @@ result$res |> head()
 
 This output format allows for easy results plotting
 
-```{r, dpi = 600, echo = FALSE, warning = FALSE, message=FALSE}
+```{r res_plot, dpi = 600, echo = FALSE, warning = FALSE, message=FALSE}
 library(tidyverse)
 result$res |>
   mutate(domain = fct_reorder(domain, est)) |> 
