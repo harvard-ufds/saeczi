@@ -17,7 +17,7 @@ In particular, we are working with variables that follow a
 semi-continuous distribution with a mixture of zeroes and positive
 continuously distributed values. An example can be seen below.
 
-![](README-zi-plot-1.png)<!-- -->
+![](figs/README-zi-plot-1.png)
 
 `saeczi` first fits a linear mixed model to the non-zero portion of the
 response and then a generalized linear mixed model with binomial
@@ -70,8 +70,13 @@ result <- saeczi(samp_dat = samp,
                  mse_est = TRUE,
                  B = 500,
                  parallel = FALSE)
-#> creating bootstraps...
-#> estimating mse...
+#> ================================================================================
+#> • Fitting Models...
+#> • Beginning Bootstrap...
+#>                                                                   - Fitting to Bootstrap samples ✓
+#>                                       - Estimating MSE ✓
+#> • Compiling Results...
+#> ================================================================================
 ```
 
 The function returns the original call, a data frame containing the
@@ -91,14 +96,14 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   domain       mse      est
-#> 1  41001 374.82344 14.85495
-#> 2  41003  10.97949 97.74967
-#> 3  41005 708.82223 86.02207
-#> 4  41007 251.39503 76.24752
-#> 5  41009 382.08787 70.28624
-#> 6  41011  77.06537 87.65072
+#> 1  41001 173.58940 14.85495
+#> 2  41003  42.43279 97.74967
+#> 3  41005 581.01815 86.02207
+#> 4  41007  35.98329 76.24752
+#> 5  41009 222.58951 70.28624
+#> 6  41011 213.38928 87.65072
 ```
 
 This output format allows for easy results plotting
 
-![](README-res_plot-1.png)<!-- -->
+![](figs/README-res_plot-1.png)

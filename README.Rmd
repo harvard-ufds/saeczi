@@ -23,38 +23,7 @@ knitr::opts_chunk$set(
 
 `saeczi` is an R package that implements a small area estimator that uses a two-stage modeling approach for zero-inflated response variables. In particular, we are working with variables that follow a semi-continuous distribution with a mixture of zeroes and positive continuously distributed values. An example can be seen below.
 
-```{r zi-plot, dpi = 600, fig.width = 10, fig.height=6, echo=F, message=F, warning=F}
-set.seed(6)
-library(tidyverse)
-
-z <- tibble(
-  z = rep(0, 2500)
-)
-
-nz <- tibble(
-  nz = rgamma(1000, 3, 4)
-)
-
-ggplot() +
-  geom_density(
-    data = filter(nz, nz > 0.25),
-    aes(x = nz, y = ..count..),
-    fill = "#023047",
-    color = "white",
-    alpha = 0.9
-    ) +
-  geom_histogram(
-    data = z,
-    aes(x = z),
-    fill = "#023047",
-    color = "white",
-    alpha = 0.9
-    ) +
-  labs(
-    x = "Response Variable"
-  ) +
-  theme_bw()
-```
+![](figs/README-zi-plot-1.png)
 
 `saeczi` first fits a linear mixed model to the non-zero portion of the response and then a generalized linear mixed model with binomial response to classify the probability of zero for a given data point. In estimation these models are each applied to new data points and combined to compute a final prediction. 
 
@@ -108,20 +77,4 @@ result$res |> head()
 
 This output format allows for easy results plotting
 
-```{r res_plot, dpi = 600, echo = FALSE, warning = FALSE, message=FALSE}
-library(tidyverse)
-result$res |>
-  mutate(domain = fct_reorder(domain, est)) |> 
-  ggplot() +
-  geom_point(aes(x = domain, y = est), alpha = 0.7, size = 0.8) +
-  geom_errorbar(aes(x = domain,
-                    ymin = est - 1.96*sqrt(mse),
-                    ymax = est + 1.96*sqrt(mse)),
-                color = "midnightblue") +
-  theme_bw() +
-  theme(
-    axis.text.x = element_text(angle = 45, vjust = 0.7)
-  ) +
-  labs(x = "County", y = "Biomass")
-```
-
+![](figs/README-res_plot-1.png)

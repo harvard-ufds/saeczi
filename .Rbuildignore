@@ -4,3 +4,5 @@
 sandbox
 ^data-raw$
 ^\.github$
+^figs$
+^cran-comments\.md$
