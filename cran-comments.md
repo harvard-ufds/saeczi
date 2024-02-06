@@ -1,5 +1,13 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+The package has been tested on the following systems
 
-* This is a new release.
+* macos-latest (release)
+* windows-latest (release)
+* ubuntu-latest (devel)
+* ububtu-latest (release)
+* ubuntu-latest (oldrel-1)
+
+0 errors | 0 warnings | 0 notes
+
+* This is a new release set to version 0.1.0
