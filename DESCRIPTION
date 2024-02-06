@@ -13,7 +13,7 @@ Authors@R: c(person("Josh", "Yamamoto", role = c("aut", "cre"),
 Maintainer: Josh Yamamoto <joshuayamamoto5@gmail.com>
 Description: A package that simplifies the process of fitting a zero-inflated estimator
     onto a dataset. This estimator is a combination of a linear regression model 
-    and a logistic regression model which is summarized by Yamamoto et al.
+    and a logistic regression model which is summarized by White et al.
     The variance is estimated through a bootstrapping method which is given 
     by Chandra et al. 
 License: CC0
