@@ -11,25 +11,25 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// dom_preds_calc
-SEXP dom_preds_calc(const Eigen::MatrixXd& beta_lm, const Eigen::MatrixXd& beta_glm, const int J, const Eigen::MatrixXd& u_lm, const Eigen::MatrixXd& u_glm, const Rcpp::List& design_mats);
-RcppExport SEXP _saeczi_dom_preds_calc(SEXP beta_lmSEXP, SEXP beta_glmSEXP, SEXP JSEXP, SEXP u_lmSEXP, SEXP u_glmSEXP, SEXP design_matsSEXP) {
+// generate_preds
+SEXP generate_preds(const Eigen::MatrixXd& beta_lm, const Eigen::MatrixXd& beta_glm, const Eigen::MatrixXd& u_lm, const Eigen::MatrixXd& u_glm, const Rcpp::List& design_mats, int J);
+RcppExport SEXP _saeczi_generate_preds(SEXP beta_lmSEXP, SEXP beta_glmSEXP, SEXP u_lmSEXP, SEXP u_glmSEXP, SEXP design_matsSEXP, SEXP JSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type beta_lm(beta_lmSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type beta_glm(beta_glmSEXP);
-    Rcpp::traits::input_parameter< const int >::type J(JSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u_lm(u_lmSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u_glm(u_glmSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type design_mats(design_matsSEXP);
-    rcpp_result_gen = Rcpp::wrap(dom_preds_calc(beta_lm, beta_glm, J, u_lm, u_glm, design_mats));
+    Rcpp::traits::input_parameter< int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(generate_preds(beta_lm, beta_glm, u_lm, u_glm, design_mats, J));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_saeczi_dom_preds_calc", (DL_FUNC) &_saeczi_dom_preds_calc, 6},
+    {"_saeczi_generate_preds", (DL_FUNC) &_saeczi_generate_preds, 6},
     {NULL, NULL, 0}
 };
 
