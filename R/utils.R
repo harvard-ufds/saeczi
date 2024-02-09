@@ -39,7 +39,6 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
 
 
 # fit_zi function
-
 fit_zi <- function(samp_dat,
                    lin_formula,
                    log_formula,
@@ -79,7 +78,6 @@ fit_zi <- function(samp_dat,
     lme4::glmer(log_reg_formula, data = samp_dat, family = 'binomial')
   )
   
-  
   return(list(lmer = lmer_nz, glmer = glmer_z))
   
 }
@@ -110,12 +108,12 @@ generate_mse <- function(.data,
   u_lm <- u_lm[, order(match(colnames(u_lm), dom_order))]
   u_glm <- u_glm[, order(match(colnames(u_glm), dom_order))]
   
-  dom_res_wide <- dom_preds_calc(beta_lm = beta_lm_mat,
+  dom_res_wide <- generate_preds(beta_lm = beta_lm_mat,
                                  beta_glm = beta_glm_mat,
-                                 J = n_doms,
                                  u_lm = u_lm,
                                  u_glm = u_glm,
-                                 design_mats = design_mat_ls)
+                                 design_mats = design_mat_ls,
+                                 J = n_doms)
   
   
   truth_ordered <- truth[order(match(truth$domain, dom_order)), ]
@@ -295,34 +293,3 @@ capture_all <- function(.f){
   }
   
 }
-
-truncateText <- function(x) {
-  if (length(x) > 1)
-    x <- paste(x, collapse = "")
-  w <- options("width")$width
-  if (nchar(x) <= w)
-    return(x)
-  
-  cont <- TRUE
-  out <- x
-  while (cont) {
-    tmp <- out[length(out)]
-    tmp2 <- substring(tmp, 1, w)
-    
-    spaceIndex <- gregexpr("[[:space:]]", tmp2)[[1]]
-    stopIndex <- spaceIndex[length(spaceIndex) - 1] - 1
-    tmp <- c(substring(tmp2, 1, stopIndex),
-             substring(tmp, stopIndex + 1))
-    out <-
-      if (length(out) == 1)
-        tmp
-    else
-      c(out[1:(length(x) - 1)], tmp)
-    if (all(nchar(out) <= w))
-      cont <- FALSE
-  }
-  
-  paste(out, collapse = "\n")
-}
-
-
