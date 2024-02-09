@@ -3,7 +3,6 @@
 #include <cmath>
 #include <Rcpp.h>
 #include <RcppEigen.h>
-#include <cli/progress.h>
 
 double sigmoid(double x) {
   return 1.0 / (1.0 + std::exp(-x));
@@ -21,8 +20,6 @@ SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
   
   Eigen::MatrixXd result = Eigen::MatrixXd::Zero(J, B);
   
-  SEXP bar = PROTECT(cli_progress_bar(J, NULL));
-  cli_progress_set_format(bar, "   - Estimating MSE {cli::pb_percent}");
   for (int j = 0; j < J; ++j) {
 
     Rcpp::List dmats_j = design_mats[j];
@@ -41,12 +38,9 @@ SEXP dom_preds_calc(const Eigen::MatrixXd &beta_lm,
     Eigen::MatrixXd dom_preds_j = unit_preds_j.colwise().mean();
     result.block(j, 0, 1, B) = dom_preds_j;
     
-    if (CLI_SHOULD_TICK) cli_progress_set(bar, j);
     
   }
-  cli_progress_set_clear(bar, 1);
-  cli_progress_done(bar);
-  UNPROTECT(1);
+
   return Rcpp::wrap(result);
   
 }
