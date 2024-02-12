@@ -32,6 +32,20 @@ saeczi(
 
 \item{parallel}{Compute MSE estimation in parallel}
 }
+\value{
+An object of class `zi_mod` with defined `print()` and `summary()` methods. 
+The object is structured like a list and contains the following elements:
+
+* call: The original function call
+
+* res: A data.frame containing the estimates and mse estimates
+
+* bootstrap_log: A list containing any messages and warnings that occur during the bootstrap process
+
+* lin_mod: The modeling object used to fit the original linear model
+
+* log_mod: The modeling object used to fit the original logistic model
+}
 \description{
 Calculate the domain predictions using the zero-inflation estimator, and outputs
 those domain-level predictions, in the form of a dataframe. It contains
@@ -45,4 +59,20 @@ can be unquoted or quoted. The function can handle both forms.
 
 The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
 as well as the predictor variables for the function to work.
+}
+\examples{
+data(pop)
+data(samp)
+
+lin_formula <- DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev
+
+result <- saeczi(samp,
+                 pop, 
+                 lin_formula,
+                 log_formula = lin_formula,
+                 domain_level = "COUNTYFIPS",
+                 mse_est = TRUE,
+                 B = 5,
+                 parallel = FALSE)
+
 }
