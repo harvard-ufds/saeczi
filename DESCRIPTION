@@ -13,9 +13,9 @@ Authors@R: c(person("Josh", "Yamamoto", role = c("aut", "cre"),
 Maintainer: Josh Yamamoto <joshuayamamoto5@gmail.com>
 Description: Simplifies the process of fitting a zero-inflated estimator
     onto a dataset. This estimator is a combination of a linear mixed effects regression model 
-    and a logistic mixed effects regression model which is summarized by White et al (2024, <arXiv:2402.03263>).
+    and a logistic mixed effects regression model which is summarized by White and others (2024, <arXiv:2402.03263>).
     The variance is estimated through a parametric bootstrapping method which is given 
-    by Chandra et al (2012, <doi:10.1080/03610918.2011.598991>). 
+    by Chandra and others (2012, <doi:10.1080/03610918.2011.598991>). 
 License: CC0
 Encoding: UTF-8
 LazyData: true

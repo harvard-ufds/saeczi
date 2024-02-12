@@ -46,9 +46,7 @@
 #'                  lin_formula,
 #'                  log_formula = lin_formula,
 #'                  domain_level = "COUNTYFIPS",
-#'                  mse_est = TRUE,
-#'                  B = 5,
-#'                  parallel = FALSE)
+#'                  mse_est = FALSE)
 #'
 #' @export saeczi
 #' @import stats
