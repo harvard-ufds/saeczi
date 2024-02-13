@@ -7,6 +7,8 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/saeczi)](https://CRAN.R-project.org/package=saeczi)
 <!-- badges: end -->
 
 ## Overview
@@ -70,13 +72,6 @@ result <- saeczi(samp_dat = samp,
                  mse_est = TRUE,
                  B = 500,
                  parallel = FALSE)
-#> ================================================================================
-#> • Fitting Models...
-#> • Beginning Bootstrap...
-#>                                                                   - Fitting to Bootstrap samples ✓
-#>                                       - Estimating MSE ✓
-#> • Compiling Results...
-#> ================================================================================
 ```
 
 The function returns the original call, a data frame containing the
@@ -96,12 +91,12 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   domain       mse      est
-#> 1  41001 173.58940 14.85495
-#> 2  41003  42.43279 97.74967
-#> 3  41005 581.01815 86.02207
-#> 4  41007  35.98329 76.24752
-#> 5  41009 222.58951 70.28624
-#> 6  41011 213.38928 87.65072
+#> 1  41001 327.73882 14.85495
+#> 2  41003 107.30485 97.74967
+#> 3  41005 268.87257 86.02207
+#> 4  41007 146.77866 76.24752
+#> 5  41009  19.43486 70.28624
+#> 6  41011  90.38764 87.65072
 ```
 
 This output format allows for easy results plotting
