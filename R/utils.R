@@ -97,8 +97,8 @@ generate_mse <- function(.data,
   
   design_mat_ls <-  boot_pop_by_dom |> 
     map(.f = function(.x) {
-      dmat_lm <- model.matrix(~., .x[ ,lin_X])
-      dmat_glm <- model.matrix(~., .x[ ,log_X])
+      dmat_lm <- model.matrix(~., .x[ ,lin_X, drop = FALSE])
+      dmat_glm <- model.matrix(~., .x[ ,log_X, drop = FALSE])
       return(list(design_mat_lm = dmat_lm,
                   design_mat_glm = dmat_glm))
     })
