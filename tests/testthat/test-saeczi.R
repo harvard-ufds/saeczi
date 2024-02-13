@@ -4,7 +4,7 @@ data(samp)
 lin_formula <- sqrtbio ~ tcc16 
 
 samp <- samp |> 
-  mutate(sqrtbio = sqrt(DRYBIO_AG_TPA_live_ADJ))
+  dplyr::mutate(sqrtbio = sqrt(DRYBIO_AG_TPA_live_ADJ))
   
 
 set.seed(5)
