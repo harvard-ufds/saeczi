@@ -16,7 +16,7 @@ Description: Simplifies the process of fitting a zero-inflated estimator
     and a logistic mixed effects regression model which is summarized by White and others (2024, <arXiv:2402.03263>).
     The variance is estimated through a parametric bootstrapping method which is given 
     by Chandra and others (2012, <doi:10.1080/03610918.2011.598991>). 
-License: CC0
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
