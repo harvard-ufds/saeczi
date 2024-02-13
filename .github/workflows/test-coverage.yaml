@@ -54,7 +54,7 @@ jobs:
         uses: codecov/codecov-action@v4.0.1
         env:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: joshyam-k/saeczi-track
+          slug: harvard-ufds/saeczi
 
       - name: Upload test results
         if: failure()
