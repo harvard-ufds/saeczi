@@ -33,7 +33,14 @@ sequentially.
 
 ## Installation
 
-You can install the developmental version of `saeczi` from GitHub with:
+Install the latest CRAN release with:
+
+``` r
+pak::pkg_install("saeczi")
+```
+
+You can also install the developmental version of `saeczi` from GitHub
+with:
 
 ``` r
 # install.packages("pak")
@@ -91,12 +98,12 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   domain       mse      est
-#> 1  41001 327.73882 14.85495
-#> 2  41003 107.30485 97.74967
-#> 3  41005 268.87257 86.02207
-#> 4  41007 146.77866 76.24752
-#> 5  41009  19.43486 70.28624
-#> 6  41011  90.38764 87.65072
+#> 1  41001 156.66442 14.85495
+#> 2  41003  28.41606 97.74967
+#> 3  41005 305.86545 86.02207
+#> 4  41007 169.09258 76.24752
+#> 5  41009  92.54089 70.28624
+#> 6  41011 633.15740 87.65072
 ```
 
 This output format allows for easy results plotting

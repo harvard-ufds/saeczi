@@ -32,7 +32,14 @@ The package can also generate MSE estimates using a parametric bootstrap approac
 
 ## Installation
 
-You can install the developmental version of `saeczi` from GitHub with:
+Install the latest CRAN release with:
+
+```{r cran-installation, eval = FALSE}
+pak::pkg_install("saeczi")
+```
+
+
+You can also install the developmental version of `saeczi` from GitHub with:
 
 ```{r gh-installation, eval = FALSE}
 # install.packages("pak")
