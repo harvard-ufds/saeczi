@@ -82,7 +82,3 @@ As there are 36 total counties in Oregon, we will just look at the first few row
 ```{r}
 result$res |> head()
 ```
-
-This output format allows for easy results plotting
-
-![](figs/README-res_plot-1.png)
