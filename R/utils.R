@@ -91,7 +91,8 @@ generate_mse <- function(.data,
                          u_lm,
                          u_glm,
                          lin_X,
-                         log_X) {
+                         log_X,
+                         res_type) {
   
   boot_pop_by_dom <- split(.data, f = .data$domain)
   
@@ -113,18 +114,22 @@ generate_mse <- function(.data,
                                  u_lm = u_lm,
                                  u_glm = u_glm,
                                  design_mats = design_mat_ls,
-                                 J = n_doms)
+                                 J = n_doms,
+                                 res_type = res_type)
+  
+  
   
   
   truth_ordered <- truth[order(match(truth$domain, dom_order)), ]
   truth_vec <- truth_ordered$domain_est
   
-  mean_sq_err <- (dom_res_wide - truth_vec)^2 |>
+  mse <- (dom_res_wide - truth_vec)^2 |>
     rowMeans(na.rm = TRUE)
   
+
   res_doms <- data.frame(
     domain = truth_ordered$domain,
-    mse = mean_sq_err
+    mse = mse
   )
   
   return(res_doms)

@@ -13,6 +13,7 @@
 #' @param domain_level A string of the column name in the dataframes that reflect the domain level
 #' @param B An integer of the number of reps desired for the bootstrap
 #' @param mse_est A boolean that specifies if the user
+#' @param res_type A string specifying whether the estimates should be 'totals' or 'means'.
 #' @param parallel Compute MSE estimation in parallel
 #'
 #' @details The arguments `lin_formula`, and `log_formula`
@@ -62,6 +63,7 @@ saeczi <- function(samp_dat,
                    domain_level,
                    B = 100,
                    mse_est = FALSE,
+                   res_type = "means",
                    parallel = FALSE) {
   
   funcCall <- match.call() 
@@ -74,6 +76,10 @@ saeczi <- function(samp_dat,
   if(!("formula" %in% class(log_formula))) {
     log_formula <- as.formula(log_formula)
     message("log_formula was converted to class 'formula'")
+  }
+  
+  if(!(res_type %in% c("means", "totals"))) {
+    stop("Invalid res_type, must be either 'means' or 'totals'")
   }
   
   if (parallel && is(future::plan(), "sequential")) {
@@ -112,10 +118,15 @@ saeczi <- function(samp_dat,
     as.character(.data[ , domain_level, drop = T])
   )
   
-  zi_domain_preds <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
-  names(zi_domain_preds) <- c("domain", "Y_hat_j")
-  
-  original_pred <- zi_domain_preds
+  if (res_type == "means") {
+    zi_domain_means <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
+    names(zi_domain_means) <- c("domain", "Y_hat_j")
+    original_pred <- zi_domain_means
+  } else {
+    zi_domain_totals <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = sum)
+    names(zi_domain_totals) <- c("domain", "Y_hat_j")
+    original_pred <- zi_domain_totals
+  }
   
   if (mse_est) {
     
@@ -224,9 +235,15 @@ saeczi <- function(samp_dat,
         paste(log_X, collapse = " + ")
       )
     )
-    # define these before bootstrap
-    boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
-                                                   FUN = mean), c("domain", "domain_est"))
+    
+    if (res_type == "means") {
+      boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
+                                                     FUN = mean), c("domain", "domain_est"))
+    } else {
+      boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
+                                                     FUN = sum), c("domain", "domain_est"))
+    }
+
     
     # create bootstrap samples 
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
@@ -336,7 +353,8 @@ saeczi <- function(samp_dat,
                                  u_lm = u_lm,
                                  u_glm = u_glm,
                                  lin_X = lin_X,
-                                 log_X = log_X)
+                                 log_X = log_X,
+                                 res_type = res_type)
       
       log_lst <- res |>
         map(.f = ~ .x$log)
