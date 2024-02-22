@@ -12,6 +12,7 @@ saeczi(
   domain_level,
   B = 100,
   mse_est = FALSE,
+  estimand = "means",
   parallel = FALSE
 )
 }
@@ -29,6 +30,8 @@ saeczi(
 \item{B}{An integer of the number of reps desired for the bootstrap}
 
 \item{mse_est}{A boolean that specifies if the user}
+
+\item{estimand}{A string specifying whether the estimates should be 'totals' or 'means'.}
 
 \item{parallel}{Compute MSE estimation in parallel}
 }
