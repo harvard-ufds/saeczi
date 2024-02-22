@@ -12,7 +12,7 @@ saeczi(
   domain_level,
   B = 100,
   mse_est = FALSE,
-  res_type = "means",
+  estimand = "means",
   parallel = FALSE
 )
 }
@@ -31,7 +31,7 @@ saeczi(
 
 \item{mse_est}{A boolean that specifies if the user}
 
-\item{res_type}{A string specifying whether the estimates should be 'totals' or 'means'.}
+\item{estimand}{A string specifying whether the estimates should be 'totals' or 'means'.}
 
 \item{parallel}{Compute MSE estimation in parallel}
 }

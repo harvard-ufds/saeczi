@@ -92,7 +92,7 @@ generate_mse <- function(.data,
                          u_glm,
                          lin_X,
                          log_X,
-                         res_type) {
+                         estimand) {
   
   boot_pop_by_dom <- split(.data, f = .data$domain)
   
@@ -115,7 +115,7 @@ generate_mse <- function(.data,
                                  u_glm = u_glm,
                                  design_mats = design_mat_ls,
                                  J = n_doms,
-                                 res_type = res_type)
+                                 estimand = estimand)
   
   
   

@@ -13,7 +13,7 @@
 #' @param domain_level A string of the column name in the dataframes that reflect the domain level
 #' @param B An integer of the number of reps desired for the bootstrap
 #' @param mse_est A boolean that specifies if the user
-#' @param res_type A string specifying whether the estimates should be 'totals' or 'means'.
+#' @param estimand A string specifying whether the estimates should be 'totals' or 'means'.
 #' @param parallel Compute MSE estimation in parallel
 #'
 #' @details The arguments `lin_formula`, and `log_formula`
@@ -63,7 +63,7 @@ saeczi <- function(samp_dat,
                    domain_level,
                    B = 100,
                    mse_est = FALSE,
-                   res_type = "means",
+                   estimand = "means",
                    parallel = FALSE) {
   
   funcCall <- match.call() 
@@ -78,8 +78,8 @@ saeczi <- function(samp_dat,
     message("log_formula was converted to class 'formula'")
   }
   
-  if(!(res_type %in% c("means", "totals"))) {
-    stop("Invalid res_type, must be either 'means' or 'totals'")
+  if(!(estimand %in% c("means", "totals"))) {
+    stop("Invalid estimand, must be either 'means' or 'totals'")
   }
   
   if (parallel && is(future::plan(), "sequential")) {
@@ -118,7 +118,7 @@ saeczi <- function(samp_dat,
     as.character(.data[ , domain_level, drop = T])
   )
   
-  if (res_type == "means") {
+  if (estimand == "means") {
     zi_domain_means <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
     names(zi_domain_means) <- c("domain", "Y_hat_j")
     original_pred <- zi_domain_means
@@ -236,7 +236,7 @@ saeczi <- function(samp_dat,
       )
     )
     
-    if (res_type == "means") {
+    if (estimand == "means") {
       boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
                                                      FUN = mean), c("domain", "domain_est"))
     } else {
@@ -354,7 +354,7 @@ saeczi <- function(samp_dat,
                                  u_glm = u_glm,
                                  lin_X = lin_X,
                                  log_X = log_X,
-                                 res_type = res_type)
+                                 estimand = estimand)
       
       log_lst <- res |>
         map(.f = ~ .x$log)

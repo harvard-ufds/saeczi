@@ -17,7 +17,7 @@ void preds_calc(Eigen::MatrixXd& result,
                 const Eigen::MatrixXd& u_glm,
                 int j,
                 int B,
-                std::string res_type) {
+                std::string estimand) {
   
   // these are N_j x B
   Eigen::MatrixXd pred_lm_j = (dmat_lm * beta_lm.transpose());
@@ -32,7 +32,7 @@ void preds_calc(Eigen::MatrixXd& result,
   int N_j = unit_preds_j.rows();
   
   Eigen::MatrixXd dom_preds_j;
-  if (res_type == "means") {
+  if (estimand == "means") {
     dom_preds_j = unit_preds_j.colwise().mean();
   } else {
     dom_preds_j = unit_preds_j.colwise().sum();
@@ -49,7 +49,7 @@ SEXP generate_preds(const Eigen::MatrixXd& beta_lm,
                     const Eigen::MatrixXd& u_glm,
                     const Rcpp::List& design_mats,
                     int J,
-                    std::string res_type) {
+                    std::string estimand) {
   
   int B = u_lm.rows();
   
@@ -71,7 +71,7 @@ SEXP generate_preds(const Eigen::MatrixXd& beta_lm,
                u_glm,
                j, 
                B,
-               res_type);
+               estimand);
     
   }
 
