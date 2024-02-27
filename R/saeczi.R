@@ -294,7 +294,8 @@ saeczi <- function(samp_dat,
                                  u_lm = u_lm,
                                  u_glm = u_glm,
                                  lin_X = lin_X,
-                                 log_X = log_X)
+                                 log_X = log_X,
+                                 estimand = estimand)
       
       log_lst <- res |>
         map(.f = ~ .x$log)
