@@ -130,96 +130,12 @@ saeczi <- function(samp_dat,
   
   if (mse_est) {
     
-    zi_model_coefs <- mse_coefs(
-      original_out$lmer,
-      original_out$glmer
-    )
-    
-    params_and_domain <- data.frame(
-      dom = zi_model_coefs$domain_levels,
-      b_i = zi_model_coefs$b_i
-    )
-    
-    # new levels need to be set to zero here
-    joined_pop_bi <- merge(
-      x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
-      y = params_and_domain,
-      by = "dom",
-      all.x = TRUE
-    ) 
-    
-    joined_pop_bi[is.na(joined_pop_bi$b_i), "b_i"] <- 0
-    
-    x_log_matrix <- model.matrix(
-      as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
-      data = pop_dat[ , log_X, drop = F]
-    )
-    
-    x_lin_matrix <- model.matrix(
-      as.formula(paste0(" ~ ", paste(lin_X, collapse = " + "))),
-      data = pop_dat[ , lin_X, drop = F]
-    )
-    
-    # generating random errors
-    individual_random_errors <- data.frame(
-      dom = pop_dat[ , domain_level, drop = T],
-      individual_random_errors = rnorm(
-        n = length(pop_dat[ , domain_level, drop = T]),
-        mean = 0,
-        sd = sqrt(zi_model_coefs$sig2_eps_hat)
-      )
-    )
-    # tweak for allowing new levels
-    pop_doms <- unique(pop_dat[[domain_level]])
-    all_doms <- unique(pop_doms, zi_model_coefs$domain_levels)
-    area_random_errors <- data.frame(
-      dom = all_doms,
-      area_random_errors = rnorm(
-        length(all_doms),
-        mean = 0,
-        sd = sqrt(zi_model_coefs$sig2_mu_hat)
-      )
-    )
-    
-    random_effects <- merge(
-      x = individual_random_errors,
-      y = area_random_errors,
-      by = "dom",
-      all.x = TRUE
-    )
-    
-    # predict probability of non-zeros
-    p_hat_i <- 1/(1 + exp(-(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)))
-    
-    # Generate corresponding deltas
-    delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
-    
-    boot_data_generation_params <- list(
-      random_effects = random_effects,
-      p_hat_i = p_hat_i,
-      delta_i_star = delta_i_star
-    )
-    
-    # remove columns if lme4 removes them in the initial fitting process
-    x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_out$lmer))]
-    
-    linear_preds <- x_lin_matrix %*% zi_model_coefs$beta_hat +
-      boot_data_generation_params$random_effects$area_random_errors +
-      boot_data_generation_params$random_effects$individual_random_errors
-    
-    boot_pop_response <- as.vector(
-      linear_preds * boot_data_generation_params$delta_i_star
-    )
-    
-    # bootstrap population data
-    boot_pop_data <- data.frame(
-      domain = pop_dat[ , domain_level, drop = T],
-      response = boot_pop_response
-    )
-    
+    boot_pop_data <- generate_boot_pop(original_out,
+                                       pop_dat,
+                                       domain_level,
+                                       lin_X,
+                                       log_X)
     ## bootstrapping -------------------------------------------------------------
-    
-    boot_pop_data <- cbind(pop_dat, boot_pop_data)
     
     # creating bootstrap formula to be used to fit zi-model to bootstrap samples
     boot_lin_formula <- as.formula(
@@ -248,66 +164,19 @@ saeczi <- function(samp_dat,
     # create bootstrap samples 
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
     
-    # goal is to not pass boot_pop_data to the map at all
-    
-    # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x, boot_lst) {
-      
-      p <- progressor(steps = length(x))
-      
-      res <- 
-        furrr::future_map(.x = boot_lst,
-                          .f = \(.x) {
-                            p()
-                            boot_rep(boot_samp = .x,
-                                     domain_level,
-                                     boot_lin_formula,
-                                     boot_log_formula)
-                          },
-                          .options = furrr_options(seed = TRUE))
-      
-      beta_lm_mat <- res |>
-        map_dfr(.f = ~ .x$params$beta_lm) |>
-        as.matrix()
-      
-      beta_glm_mat <- res |>
-        map_dfr(.f = ~ .x$params$beta_glm) |>
-        as.matrix()
-      
-      u_lm <- res |> 
-        map_dfr(.f = ~ .x$params$u_lm) |> 
-        as.matrix()
-      
-      u_glm <- res |> 
-        map_dfr(.f = ~ .x$params$u_glm) |> 
-        as.matrix()
-      
-      # sometimes u_lm will have fewer domains once it is filtered
-      # down to positive response values
-      u_lm[is.na(u_lm)] <- 0
-      
-      preds_full <- generate_mse(.data = boot_pop_data,
-                                 truth = boot_truth,
-                                 domain_level = domain_level,
-                                 beta_lm_mat = beta_lm_mat,
-                                 beta_glm_mat = beta_glm_mat,
-                                 u_lm = u_lm,
-                                 u_glm = u_glm,
-                                 lin_X = lin_X,
-                                 log_X = log_X)
-      
-      log_lst <- res |>
-        map(.f = ~ .x$log)
-      
-      list(preds_full, log_lst)
-      
-    }
     
     if (parallel) {
       
       with_progress({
         boot_res <- boot_rep_with_progress_bar(x = 1:B,
-                                               boot_lst = boot_samp_ls)
+                                               boot_lst = boot_samp_ls,
+                                               domain_level,
+                                               boot_lin_formula,
+                                               boot_log_formula,
+                                               boot_pop_data,
+                                               boot_truth,
+                                               lin_X,
+                                               log_X)
       }) 
       
     } else {
