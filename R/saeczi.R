@@ -51,6 +51,8 @@
 #'
 #' @export saeczi
 #' @import stats
+#' @importFrom rlang sym
+#' @importFrom dplyr summarise group_by mutate left_join
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options future_map2
 #' @importFrom purrr map map2 map_dfr
@@ -120,108 +122,74 @@ saeczi <- function(samp_dat,
   
   if (estimand == "means") {
     zi_domain_means <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
-    names(zi_domain_means) <- c("domain", "Y_hat_j")
+    names(zi_domain_means) <- c(domain_level, "est")
     original_pred <- zi_domain_means
   } else {
     zi_domain_totals <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = sum)
-    names(zi_domain_totals) <- c("domain", "Y_hat_j")
+    names(zi_domain_totals) <- c(domain_level, "est")
     original_pred <- zi_domain_totals
   }
   
   if (mse_est) {
     
-    zi_model_coefs <- mse_coefs(
-      original_out$lmer,
-      original_out$glmer
+    zi_mod_coefs <- mse_coefs(original_out$lmer, original_out$glmer)
+    
+    params_and_domain <- setNames(
+      zi_mod_coefs$b_i,
+      zi_mod_coefs$domain_levels
     )
     
-    params_and_domain <- data.frame(
-      dom = zi_model_coefs$domain_levels,
-      b_i = zi_model_coefs$b_i
+    pop_b_i <- data.frame(
+      dom = pop_dat[ , domain_level, drop = TRUE],
+      b_i = params_and_domain[pop_dat[ , domain_level, drop = TRUE]]
     )
     
-    # new levels need to be set to zero here
-    joined_pop_bi <- merge(
-      x = data.frame(dom = pop_dat[ , domain_level, drop = T]),
-      y = params_and_domain,
-      by = "dom",
-      all.x = TRUE
-    ) 
+    pop_b_i[is.na(pop_b_i$b_i), "b_i"] <- 0
     
-    joined_pop_bi[is.na(joined_pop_bi$b_i), "b_i"] <- 0
-    
-    x_log_matrix <- model.matrix(
-      as.formula(paste0(" ~ ", paste(log_X, collapse = " + "))),
-      data = pop_dat[ , log_X, drop = F]
+    x_matrix <- model.matrix(
+      as.formula(paste0(" ~ ", paste(all_preds, collapse = " + "))),
+      data = pop_dat[ , all_preds, drop = FALSE]
     )
     
-    x_lin_matrix <- model.matrix(
-      as.formula(paste0(" ~ ", paste(lin_X, collapse = " + "))),
-      data = pop_dat[ , lin_X, drop = F]
+    indv_re <- data.frame(
+      dom = pop_dat[ , domain_level, drop = TRUE],
+      eps_ij = rnorm(nrow(pop_dat), 0, sqrt(zi_mod_coefs$sig2_eps_hat))
     )
     
-    # generating random errors
-    individual_random_errors <- data.frame(
-      dom = pop_dat[ , domain_level, drop = T],
-      individual_random_errors = rnorm(
-        n = length(pop_dat[ , domain_level, drop = T]),
-        mean = 0,
-        sd = sqrt(zi_model_coefs$sig2_eps_hat)
-      )
-    )
     # tweak for allowing new levels
     pop_doms <- unique(pop_dat[[domain_level]])
-    all_doms <- unique(pop_doms, zi_model_coefs$domain_levels)
-    area_random_errors <- data.frame(
-      dom = all_doms,
-      area_random_errors = rnorm(
-        length(all_doms),
-        mean = 0,
-        sd = sqrt(zi_model_coefs$sig2_mu_hat)
-      )
+    all_doms <- unique(pop_doms, zi_mod_coefs$domain_levels)
+    
+    area_re_lkp <- setNames(
+      rnorm(length(all_doms), 0, sqrt(zi_mod_coefs$sig2_mu_hat)),
+      all_doms
     )
     
-    random_effects <- merge(
-      x = individual_random_errors,
-      y = area_random_errors,
-      by = "dom",
-      all.x = TRUE
+    rand_effs <- data.frame(
+      indv_re,
+      u_j = area_re_lkp[pop_dat[ , domain_level, drop = TRUE]]
     )
     
-    # predict probability of non-zeros
-    p_hat_i <- 1/(1 + exp(-(x_log_matrix %*% zi_model_coefs$alpha_1 + joined_pop_bi$b_i)))
+    p_hat_i <- 1/(1 + exp(-(x_matrix[ , c("(Intercept)", log_X)] %*% zi_mod_coefs$alpha_1 + pop_b_i$b_i)))
     
-    # Generate corresponding deltas
     delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
     
-    boot_data_generation_params <- list(
-      random_effects = random_effects,
+    boot_dat_params <- list(
+      random_effects = rand_effs,
       p_hat_i = p_hat_i,
       delta_i_star = delta_i_star
     )
-    
-    # remove columns if lme4 removes them in the initial fitting process
-    x_lin_matrix <- x_lin_matrix[, colnames(model.matrix(original_out$lmer))]
-    
-    linear_preds <- x_lin_matrix %*% zi_model_coefs$beta_hat +
-      boot_data_generation_params$random_effects$area_random_errors +
-      boot_data_generation_params$random_effects$individual_random_errors
-    
-    boot_pop_response <- as.vector(
-      linear_preds * boot_data_generation_params$delta_i_star
-    )
-    
-    # bootstrap population data
+
+    linear_preds <- (x_matrix[, colnames(model.matrix(original_out$lmer))] %*% zi_mod_coefs$beta_hat) +
+      boot_dat_params$random_effects$u_j + boot_dat_params$random_effects$eps_ij
+
     boot_pop_data <- data.frame(
-      domain = pop_dat[ , domain_level, drop = T],
-      response = boot_pop_response
-    )
+      pop_dat[ , c(domain_level, all_preds)],
+      response = linear_preds * boot_dat_params$delta_i_star
+    ) 
     
     ## bootstrapping -------------------------------------------------------------
     
-    boot_pop_data <- cbind(pop_dat, boot_pop_data)
-    
-    # creating bootstrap formula to be used to fit zi-model to bootstrap samples
     boot_lin_formula <- as.formula(
       paste0(
         "response ~ ",
@@ -237,79 +205,32 @@ saeczi <- function(samp_dat,
     )
     
     if (estimand == "means") {
-      boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
-                                                     FUN = mean), c("domain", "domain_est"))
+      boot_truth <- boot_pop_data |> 
+        group_by(!!rlang::sym(domain_level)) |> 
+        summarise(domain_est = mean(response))
     } else {
-      boot_truth <- stats::setNames(stats::aggregate(response ~ domain, data = boot_pop_data,
-                                                     FUN = sum), c("domain", "domain_est"))
+      boot_truth <- boot_pop_data |> 
+        group_by(!!rlang::sym(domain_level)) |> 
+        summarise(domain_est = sum(response))
     }
 
-    
     # create bootstrap samples 
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
-    
-    # goal is to not pass boot_pop_data to the map at all
-    
-    # furrr with progress bar
-    boot_rep_with_progress_bar <- function(x, boot_lst) {
-      
-      p <- progressor(steps = length(x))
-      
-      res <- 
-        furrr::future_map(.x = boot_lst,
-                          .f = \(.x) {
-                            p()
-                            boot_rep(boot_samp = .x,
-                                     domain_level,
-                                     boot_lin_formula,
-                                     boot_log_formula)
-                          },
-                          .options = furrr_options(seed = TRUE))
-      
-      beta_lm_mat <- res |>
-        map_dfr(.f = ~ .x$params$beta_lm) |>
-        as.matrix()
-      
-      beta_glm_mat <- res |>
-        map_dfr(.f = ~ .x$params$beta_glm) |>
-        as.matrix()
-      
-      u_lm <- res |> 
-        map_dfr(.f = ~ .x$params$u_lm) |> 
-        as.matrix()
-      
-      u_glm <- res |> 
-        map_dfr(.f = ~ .x$params$u_glm) |> 
-        as.matrix()
-      
-      # sometimes u_lm will have fewer domains once it is filtered
-      # down to positive response values
-      u_lm[is.na(u_lm)] <- 0
-      
-      preds_full <- generate_mse(.data = boot_pop_data,
-                                 truth = boot_truth,
-                                 domain_level = domain_level,
-                                 beta_lm_mat = beta_lm_mat,
-                                 beta_glm_mat = beta_glm_mat,
-                                 u_lm = u_lm,
-                                 u_glm = u_glm,
-                                 lin_X = lin_X,
-                                 log_X = log_X,
-                                 estimand = estimand)
-      
-      log_lst <- res |>
-        map(.f = ~ .x$log)
-      
-      list(preds_full, log_lst)
-      
-    }
     
     if (parallel) {
       
       with_progress({
-        boot_res <- boot_rep_with_progress_bar(x = 1:B,
-                                               boot_lst = boot_samp_ls)
-      }) 
+        boot_res <- boot_rep_par(x = 1:B,
+                                 boot_lst = boot_samp_ls,
+                                 domain_level,
+                                 boot_lin_formula,
+                                 boot_log_formula,
+                                 boot_pop_data,
+                                 boot_truth,
+                                 estimand,
+                                 lin_X,
+                                 log_X)
+        }) 
       
     } else {
       
@@ -360,28 +281,19 @@ saeczi <- function(samp_dat,
       log_lst <- res |>
         map(.f = ~ .x$log)
       
-      boot_res <- list(preds_full, log_lst)
+      boot_res <- list(preds = preds_full, log = log_lst)
       
     }
     
-    final_df <- setNames(
-      boot_res[[1]],
-      c("domain", "mse")
+    mse_df <- setNames(
+      boot_res$preds_full,
+      c(domain_level, "mse")
     )
     
-    final_df <- merge(
-      x = final_df,
-      y = original_pred,
-      by = "domain",
-      all.x = TRUE
-    )
+    final_df <- mse_df |> 
+      left_join(original_pred, by = domain_level) 
     
-    final_df <- setNames(
-      final_df[ ,c("domain", "mse", "Y_hat_j")],
-      c("domain", "mse", "est")
-    )
-    
-    bootstrap_log <- boot_res[[2]]
+    bootstrap_log <- boot_res$log_lst
     
   } else {
     
@@ -389,7 +301,6 @@ saeczi <- function(samp_dat,
     bootstrap_log <- NA
     
   }
-  
   
   out <- list(
     call = funcCall,

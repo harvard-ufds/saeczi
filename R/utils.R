@@ -14,8 +14,8 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
   }
   
   # our boot_pop_data has column name domain as its group variable
-  setup <- dplyr::count(pop, domain) |> 
-    dplyr::left_join(num_plots, by = c(domain = dom_nm)) |>
+  setup <- dplyr::count(pop, !!rlang::sym(dom_nm)) |> 
+    dplyr::left_join(num_plots, by = dom_nm) |>
     dplyr::mutate(add_to = dplyr::lag(cumsum(n.x), default = 0)) |>
     dplyr::rowwise() |> 
     dplyr::mutate(map_args = list(list(n.x, n.y, add_to))) 
@@ -94,7 +94,7 @@ generate_mse <- function(.data,
                          log_X,
                          estimand) {
   
-  boot_pop_by_dom <- split(.data, f = .data$domain)
+  boot_pop_by_dom <- split(.data, f = .data[[domain_level]])
   
   design_mat_ls <-  boot_pop_by_dom |> 
     map(.f = function(.x) {
@@ -120,7 +120,7 @@ generate_mse <- function(.data,
   
   
   
-  truth_ordered <- truth[order(match(truth$domain, dom_order)), ]
+  truth_ordered <- truth[order(match(truth[[domain_level]], dom_order)), ]
   truth_vec <- truth_ordered$domain_est
   
   mse <- (dom_res_wide - truth_vec)^2 |>
@@ -128,7 +128,7 @@ generate_mse <- function(.data,
   
 
   res_doms <- data.frame(
-    domain = truth_ordered$domain,
+    domain = truth_ordered[[domain_level]],
     mse = mse
   )
   
@@ -136,6 +136,70 @@ generate_mse <- function(.data,
   
   
 }
+
+# furrr with progress bar
+boot_rep_par <- function(x,
+                         boot_lst,
+                         domain_level,
+                         boot_lin_formula,
+                         boot_log_formula,
+                         boot_pop_data,
+                         boot_truth,
+                         estimand,
+                         lin_X,
+                         log_X) {
+  
+  p <- progressor(steps = length(x))
+  
+  res <- 
+    furrr::future_map(.x = boot_lst,
+                      .f = \(.x) {
+                        p()
+                        boot_rep(boot_samp = .x,
+                                 domain_level,
+                                 boot_lin_formula,
+                                 boot_log_formula)
+                      },
+                      .options = furrr_options(seed = TRUE))
+  
+  beta_lm_mat <- res |>
+    map_dfr(.f = ~ .x$params$beta_lm) |>
+    as.matrix()
+  
+  beta_glm_mat <- res |>
+    map_dfr(.f = ~ .x$params$beta_glm) |>
+    as.matrix()
+  
+  u_lm <- res |> 
+    map_dfr(.f = ~ .x$params$u_lm) |> 
+    as.matrix()
+  
+  u_glm <- res |> 
+    map_dfr(.f = ~ .x$params$u_glm) |> 
+    as.matrix()
+  
+  # sometimes u_lm will have fewer domains once it is filtered
+  # down to positive response values
+  u_lm[is.na(u_lm)] <- 0
+  
+  preds_full <- generate_mse(.data = boot_pop_data,
+                             truth = boot_truth,
+                             domain_level = domain_level,
+                             beta_lm_mat = beta_lm_mat,
+                             beta_glm_mat = beta_glm_mat,
+                             u_lm = u_lm,
+                             u_glm = u_glm,
+                             lin_X = lin_X,
+                             log_X = log_X,
+                             estimand = estimand)
+  
+  log_lst <- res |>
+    map(.f = ~ .x$log)
+  
+  list(preds_full, log_lst)
+  
+}
+
 
 
 
