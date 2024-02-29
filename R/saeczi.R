@@ -116,8 +116,8 @@ saeczi <- function(samp_dat,
   .data <- pop_dat[ ,c(all_preds, domain_level)]
   
   unit_level_preds <- setNames(
-    stats::predict(mod1, newdata = .data, allow.new.levels = TRUE) * stats::predict(mod2, newdata = .data, allow.new.levels = TRUE, type = "response"),
-    as.character(.data[ , domain_level, drop = T])
+    predict(mod1, newdata = .data, allow.new.levels = TRUE) * predict(mod2, newdata = .data, allow.new.levels = TRUE, type = "response"),
+    .data[ , domain_level, drop = T]
   )
   
   if (estimand == "means") {
@@ -285,8 +285,9 @@ saeczi <- function(samp_dat,
       
     }
     
+    
     mse_df <- setNames(
-      boot_res$preds_full,
+      boot_res$preds,
       c(domain_level, "mse")
     )
     
