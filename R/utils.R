@@ -1,6 +1,17 @@
-# fast samp-by-grp
+#' Generates B-many bootstrap samples
+#' 
+#' Ensures that each group in a bootstrap sample has the same number of rows as 
+#' that group did in the original sample data. 
+#' 
+#' @param samp The sample data
+#' @param pop The bootstrap population data
+#' @param dom_nm Character string of the domain identifier name as it appears in samp and pop
+#' @param B Integer. The number of bootstrap samples to produce
+#' 
+#' @return A list of length B where each item is a unique bootstrap sample
+#' @noRd
+#' 
 samp_by_grp <- function(samp, pop, dom_nm, B) {
-  
   
   num_plots <- dplyr::count(samp, !!rlang::sym(dom_nm))
   diff <- unique(pop$domain)[!unique(pop$domain) %in% unique(samp[[dom_nm]])]
@@ -14,8 +25,8 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
   }
   
   # our boot_pop_data has column name domain as its group variable
-  setup <- dplyr::count(pop, domain) |> 
-    dplyr::left_join(num_plots, by = c(domain = dom_nm)) |>
+  setup <- dplyr::count(pop, !!rlang::sym(dom_nm)) |> 
+    dplyr::left_join(num_plots, by = dom_nm) |>
     dplyr::mutate(add_to = dplyr::lag(cumsum(n.x), default = 0)) |>
     dplyr::rowwise() |> 
     dplyr::mutate(map_args = list(list(n.x, n.y, add_to))) 
@@ -35,10 +46,20 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
   }
   
   return(all_samps)
+  
 }
 
 
-# fit_zi function
+#' Fits the two models in a zi-estimator
+#' 
+#' @param samp_dat Sample data
+#' @param lin_formula Formula to be used in the linear regression model
+#' @param log_formula Formula to be used in the logistic regression model
+#' @param domain_level Character. Domain identifier name.
+#' 
+#' @return A list containing the two model objects
+#' @noRd
+#' 
 fit_zi <- function(samp_dat,
                    lin_formula,
                    log_formula,
@@ -82,7 +103,21 @@ fit_zi <- function(samp_dat,
   
 }
 
-
+#' Generates mse estimates
+#' 
+#' @param .data The bootstrap population data
+#' @param truth A data.frame containing the true domain level values from the bootstrap population data
+#' @param domain_level Character. Domain identifier name
+#' @param beta_lm_mat A matrix containing the fixed effects coefficients resulting from fitting the linear model to each bootstrap sample
+#' @param beta_glm_mat A matrix containing the fixed effects coefficients resulting from fitting the logistic model to each bootstrap sample
+#' @param u_lm A matrix containing the random effects values for each domain resulting from fitting the linear model to each bootstrap sample
+#' @param u_glm A matrix containing the random effects values for each domain resulting from fitting the linear model to each bootstrap sample
+#' @param lin_X A character vector with the names of the predictor variables used in the linear model
+#' @param log_X A character vector with the names of the predictor variables used in the logistic model
+#' @param estimand A string specifying whether the estimates should be 'totals' or 'means'
+#' 
+#' @return A data.frame with the mse estimate for every domain
+#' @noRd
 generate_mse <- function(.data,
                          truth,
                          domain_level,
@@ -94,7 +129,7 @@ generate_mse <- function(.data,
                          log_X,
                          estimand) {
   
-  boot_pop_by_dom <- split(.data, f = .data$domain)
+  boot_pop_by_dom <- split(.data, f = .data[[domain_level]])
   
   design_mat_ls <-  boot_pop_by_dom |> 
     map(.f = function(.x) {
@@ -120,7 +155,7 @@ generate_mse <- function(.data,
   
   
   
-  truth_ordered <- truth[order(match(truth$domain, dom_order)), ]
+  truth_ordered <- truth[order(match(truth[[domain_level]], dom_order)), ]
   truth_vec <- truth_ordered$domain_est
   
   mse <- (dom_res_wide - truth_vec)^2 |>
@@ -128,7 +163,7 @@ generate_mse <- function(.data,
   
 
   res_doms <- data.frame(
-    domain = truth_ordered$domain,
+    domain = truth_ordered[[domain_level]],
     mse = mse
   )
   
@@ -137,19 +172,121 @@ generate_mse <- function(.data,
   
 }
 
+#' Bootstrap procedure for the parallel option
+#' 
+#' @param x The vector 1:B where B is the number of total bootstraps
+#' @param boot_lst A list where each element contains a bootstrap sample
+#' @param domain_level Character. Domain identifier name
+#' @param boot_lin_formula The formula to be used for the linear model
+#' @param boot_log_formula The formula to be used for the logistic model
+#' @param boot_pop_data The bootstrap population data
+#' @param boot_truth A data.frame containing the true domain level values from the bootstrap population data
+#' @param estimand A string specifying whether the estimates should be 'totals' or 'means'
+#' @param lin_X A character vector with the names of the predictor variables used in the linear model
+#' @param log_X A character vector with the names of the predictor variables used in the logistic model
+#' 
+#' @return A list containing the mse estimates data.frame as well as the log from fitting the models to each bootstrap sample
+#' @noRd
+#' 
+boot_rep_par <- function(x,
+                         boot_lst,
+                         domain_level,
+                         boot_lin_formula,
+                         boot_log_formula,
+                         boot_pop_data,
+                         boot_truth,
+                         estimand,
+                         lin_X,
+                         log_X) {
+  
+  p <- progressor(steps = length(x))
+  
+  res <- 
+    furrr::future_map(.x = boot_lst,
+                      .f = \(.x) {
+                        p()
+                        boot_rep(boot_samp = .x,
+                                 domain_level,
+                                 boot_lin_formula,
+                                 boot_log_formula)
+                      },
+                      .options = furrr_options(seed = TRUE))
+  
+  beta_lm_mat <- res |>
+    map_dfr(.f = ~ .x$params$beta_lm) |>
+    as.matrix()
+  
+  beta_glm_mat <- res |>
+    map_dfr(.f = ~ .x$params$beta_glm) |>
+    as.matrix()
+  
+  u_lm <- res |> 
+    map_dfr(.f = ~ .x$params$u_lm) |> 
+    as.matrix()
+  
+  u_glm <- res |> 
+    map_dfr(.f = ~ .x$params$u_glm) |> 
+    as.matrix()
+  
+  # sometimes u_lm will have fewer domains once it is filtered
+  # down to positive response values
+  u_lm[is.na(u_lm)] <- 0
+  
+  preds_full <- generate_mse(.data = boot_pop_data,
+                             truth = boot_truth,
+                             domain_level = domain_level,
+                             beta_lm_mat = beta_lm_mat,
+                             beta_glm_mat = beta_glm_mat,
+                             u_lm = u_lm,
+                             u_glm = u_glm,
+                             lin_X = lin_X,
+                             log_X = log_X,
+                             estimand = estimand)
+  
+  log_lst <- res |>
+    map(.f = ~ .x$log)
+  
+  list(preds_full, log_lst)
+  
+}
 
 
-# base version of dplyr::slice_sample
+
+
+#' Sample n rows from a data.frame
+#' 
+#' @param .data The data.frame to sample from
+#' @param n The number of rows to sample
+#' @param replace Logical. Should selected rows be added back to the data.frame for the next row selection?
+#' 
+#' @return A data.frame with n randomly chosen rows
+#' @noRd
+#' 
 slice_samp <- function(.data, n, replace = TRUE) {
   .data[sample(nrow(.data), n, replace = replace),]
 }
 
 
-# base version of stringr::str_extract_all
+#' Extract all matches from a string
+#' 
+#' @param string String to extract matches from
+#' @param pattern Regex pattern to use for extractions
+#' 
+#' @return A vector of the matches
+#' @noRd
 str_extract_all_base <- function(string, pattern) {
   regmatches(string, gregexpr(pattern, string))
 }
 
+
+#' Format model parameters for mse estimation
+#' 
+#' @param .fit A custom list containing model fits
+#' @param ref  A list containing names to be used to fill in when a model fit failed
+#' 
+#' @return A list containing all of the properly formated parameters
+#' @noRd
+#' 
 mod_param_fmt <- function(.fit, ref = NULL) {
   
   if (!is.null(.fit)) {
@@ -196,7 +333,16 @@ mod_param_fmt <- function(.fit, ref = NULL) {
 }
 
 
-# bootstrap rep helper
+#' Perform a single bootstrap repetition
+#' 
+#' @param boot_samp data.frame, An individual bootstrap sample.
+#' @param domain_level Character. Domain identifier name
+#' @param boot_lin_formula The formula to be used for the linear model
+#' @param boot_log_formula The formula to be used for the logistic model
+#' 
+#' @return A list containing the properly formated model parameters from fitting the two models to the sample data as well as a log of any messages or warnings from the model fitting
+#' @noRd
+#' 
 boot_rep <- function(boot_samp,
                      domain_level,
                      boot_lin_formula,
@@ -237,7 +383,14 @@ boot_rep <- function(boot_samp,
 }
 
 
-# helper function to extract model coefs for bootstrap data generation
+#' Format model coefficients
+#' 
+#' @param lmer_model lme4::lmer model object
+#' @param glmer_model lme4::glmer model object
+#' 
+#' @return A list with all of the necessary model parameters
+#' @noRd
+#' 
 mse_coefs <- function(lmer_model, glmer_model) {
   
   # from lmer model
@@ -260,7 +413,12 @@ mse_coefs <- function(lmer_model, glmer_model) {
   
 }
 
-
+#' A function factory that causes a function to capture messages, warnings, or errors 
+#' 
+#' @param .f The function 
+#' 
+#' @return A function that works just like .f but also returns any messages, warnings, or errors that result from using the function
+#' @noRd
 capture_all <- function(.f){
   
   .f <- purrr::as_mapper(.f)
