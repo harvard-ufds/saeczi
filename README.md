@@ -1,15 +1,15 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# saeczi
-
-### (Small Area Estimation for Continuous Zero Inflated data)
-
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/saeczi)](https://CRAN.R-project.org/package=saeczi)
 <!-- badges: end -->
+
+# saeczi
+
+### (Small Area Estimation for Continuous Zero Inflated data)
 
 ## Overview
 
@@ -36,7 +36,7 @@ sequentially.
 Install the latest CRAN release with:
 
 ``` r
-pak::pkg_install("saeczi")
+install.packages("saeczi")
 ```
 
 You can also install the developmental version of `saeczi` from GitHub
@@ -97,11 +97,11 @@ few rows of the results:
 
 ``` r
 result$res |> head()
-#>   domain       mse      est
-#> 1  41001 151.40451 14.85495
-#> 2  41003  14.63929 97.74967
-#> 3  41005  38.05454 86.02207
-#> 4  41007  31.34302 76.24752
-#> 5  41009  91.39916 70.28624
-#> 6  41011 177.24236 87.65072
+#>   COUNTYFIPS       mse      est
+#> 1      41001 453.74637 14.85495
+#> 2      41003  35.01620 97.74967
+#> 3      41005 295.83622 86.02207
+#> 4      41007  78.80944 76.24752
+#> 5      41009  91.07024 70.28624
+#> 6      41011 277.73623 87.65072
 ```
