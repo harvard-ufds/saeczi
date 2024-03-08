@@ -144,6 +144,13 @@ generate_mse <- function(.data,
   u_lm <- u_lm[, order(match(colnames(u_lm), dom_order))]
   u_glm <- u_glm[, order(match(colnames(u_glm), dom_order))]
   
+  if (ncol(u_lm) != ncol(u_glm)) {
+    diff <- base::setdiff(colnames(u_glm), colnames(u_lm))
+    to_append <- matrix(rep(NA, times = nrow(u_lm) * length(diff)), ncol = length(diff))
+    colnames(to_append) <- diff
+    u_lm <- cbind(u_lm, to_append)
+  }
+  
   dom_res_wide <- generate_preds(beta_lm = beta_lm_mat,
                                  beta_glm = beta_glm_mat,
                                  u_lm = u_lm,
@@ -152,16 +159,12 @@ generate_mse <- function(.data,
                                  J = n_doms,
                                  estimand = estimand)
   
-  
-  
-  
   truth_ordered <- truth[order(match(truth[[domain_level]], dom_order)), ]
   truth_vec <- truth_ordered$domain_est
   
   mse <- (dom_res_wide - truth_vec)^2 |>
     rowMeans(na.rm = TRUE)
   
-
   res_doms <- data.frame(
     domain = truth_ordered[[domain_level]],
     mse = mse

@@ -4,6 +4,11 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+ <!-- badges: start -->
+  [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
+  [![CRAN status](https://www.r-pkg.org/badges/version/saeczi)](https://CRAN.R-project.org/package=saeczi)
+  <!-- badges: end -->
+
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -14,11 +19,6 @@ knitr::opts_chunk$set(
 
 # saeczi
 ### (Small Area Estimation for Continuous Zero Inflated data)
-
- <!-- badges: start -->
-  [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
-  [![CRAN status](https://www.r-pkg.org/badges/version/saeczi)](https://CRAN.R-project.org/package=saeczi)
-  <!-- badges: end -->
 
 ## Overview
 
@@ -35,7 +35,7 @@ The package can also generate MSE estimates using a parametric bootstrap approac
 Install the latest CRAN release with:
 
 ```{r cran-installation, eval = FALSE}
-pak::pkg_install("saeczi")
+install.packages("saeczi")
 ```
 
 
