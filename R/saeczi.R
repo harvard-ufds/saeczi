@@ -317,7 +317,6 @@ saeczi <- function(samp_dat,
 
 #' @export
 print.zi_mod <- function(x, ...) {
-  
   cat("\nCall:\n")
   cat(deparse(x$call))
   cat("\n\n")
@@ -337,16 +336,24 @@ print.zi_mod <- function(x, ...) {
   cat("- Random effects: \n")
   print(summary(x$log_mod)$varcor)
   cat("\n")
-  
 }
 
 #' @export
 summary.zi_mod <- function(object, ...) {
+  out <- list(
+    lin_mod = summary(object$lin_mod),
+    log_mod = summary(object$log_mod)
+  )
   
-  print(summary(object$lin_mod))
+  class(out) <- "summary.zinf_bayes"
+  out
+}
+
+#' @export
+print.summary.zi_mod <- function(x, ...) {
+  print(x$lin_mod)
   cat("\n")
-  print(summary(object$log_mod))
-  
+  print(x$log_mod)
 }
 
 
