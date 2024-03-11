@@ -311,8 +311,8 @@ mod_param_fmt <- function(.fit, ref = NULL) {
       rownames(ref_glm)
     ) 
   } else {
-    lm_terms <- ref$.lm[!stringr::str_detect(ref$.lm, "\\|")]
-    glm_terms <- ref$.glm[!stringr::str_detect(ref$.glm, "\\|")]
+    lm_terms <- ref$.lm[!grepl("\\|", ref$.lm)]
+    glm_terms <- ref$.glm[!grepl("\\|", ref$.glm)]
     beta_lm <- setNames(
       rep(NA, times = length(lm_terms) + 1),
       c('(Intercept)', lm_terms)

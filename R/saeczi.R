@@ -56,7 +56,6 @@
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options future_map2
 #' @importFrom purrr map map2 map_dfr
-#' @importFrom methods is
 
 saeczi <- function(samp_dat,
                    pop_dat,
@@ -84,7 +83,7 @@ saeczi <- function(samp_dat,
     stop("Invalid estimand, must be either 'means' or 'totals'")
   }
   
-  if (parallel && is(future::plan(), "sequential")) {
+  if (parallel && ("sequential" %in% class(future::plan()))) {
     message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
     message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
   }
