@@ -139,7 +139,7 @@ generate_mse <- function(.data,
                   design_mat_glm = dmat_glm))
     })
   
-  n_doms <- length(colnames(u_lm))
+  n_doms <- length(colnames(u_glm))
   dom_order <- names(boot_pop_by_dom)
   u_lm <- u_lm[, order(match(colnames(u_lm), dom_order))]
   u_glm <- u_glm[, order(match(colnames(u_glm), dom_order))]
@@ -485,7 +485,7 @@ check_inherits <- function(x, what) {
 check_parallel <- function(x, call = rlang::caller_env()) {
   
   if (x) {
-    if (eval(!inherits(future::plan(), "sequential"), envir = call)) {
+    if (eval(inherits(future::plan(), "sequential"), envir = call)) {
       message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
       message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
     }

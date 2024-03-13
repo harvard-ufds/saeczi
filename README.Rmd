@@ -59,14 +59,14 @@ The main response variable included in `samp` is above ground live biomass and o
 library(saeczi)
 data(pop)
 data(samp)
+
 result <- saeczi(samp_dat = samp,
                  pop_dat = pop, 
                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
                  log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
-                 B = 500L,
-                 parallel = FALSE)
+                 B = 500L)
 ```
 
 

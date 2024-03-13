@@ -202,6 +202,9 @@ saeczi <- function(samp_dat,
                                  lin_X,
                                  log_X)
         }) 
+      
+      names(boot_res) <- c("preds", "log")
+      
     } else {
       res <- 
         purrr::map(.x = boot_samp_ls,
