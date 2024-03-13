@@ -70,7 +70,6 @@ corresponding bootstrapped (B = 500) MSE estimate as follows.
 library(saeczi)
 data(pop)
 data(samp)
-
 result <- saeczi(samp_dat = samp,
                  pop_dat = pop, 
                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
@@ -98,10 +97,10 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   COUNTYFIPS       mse      est
-#> 1      41001 226.91454 14.85495
-#> 2      41003  89.32900 97.74967
-#> 3      41005 350.67805 86.02207
-#> 4      41007 608.49682 76.24752
-#> 5      41009  97.27606 70.28624
-#> 6      41011  81.05661 87.65072
+#> 1      41001  43.70587 14.85495
+#> 2      41003 203.05199 97.74967
+#> 3      41005  94.73864 86.02207
+#> 4      41007  76.49921 76.24752
+#> 5      41009 741.43291 70.28624
+#> 6      41011  78.89173 87.65072
 ```

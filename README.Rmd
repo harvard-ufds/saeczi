@@ -59,8 +59,6 @@ The main response variable included in `samp` is above ground live biomass and o
 library(saeczi)
 data(pop)
 data(samp)
-
-future::plan('multisession', workers = 6)
 result <- saeczi(samp_dat = samp,
                  pop_dat = pop, 
                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
@@ -68,7 +66,7 @@ result <- saeczi(samp_dat = samp,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
                  B = 500L,
-                 parallel = TRUE)
+                 parallel = FALSE)
 ```
 
 
