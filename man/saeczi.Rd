@@ -10,7 +10,7 @@ saeczi(
   lin_formula,
   log_formula = lin_formula,
   domain_level,
-  B = 100,
+  B = 100L,
   mse_est = FALSE,
   estimand = "means",
   parallel = FALSE

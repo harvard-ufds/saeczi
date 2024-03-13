@@ -13,7 +13,7 @@ result <- saeczi(samp,
                  lin_formula,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
-                 B = 10,
+                 B = 10L,
                  parallel = FALSE)
 
 test_that("result$res is a df", {

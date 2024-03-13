@@ -172,7 +172,6 @@ generate_mse <- function(.data,
   
   return(res_doms)
   
-  
 }
 
 #' Bootstrap procedure for the parallel option
@@ -458,4 +457,39 @@ capture_all <- function(.f){
     
   }
   
+}
+
+#' Checking if a param inherits a class
+#' 
+#' @param x The parameter input(s) to check
+#' @param what What class to check if the parameter input inherits
+#' 
+#' @return Nothing if the check is passed, but an error if the check fails
+#' @noRd
+check_inherits <- function(x, what) {
+  for (i in seq_along(x)) {
+    if (!inherits(x[[i]], what)) {
+      stop(paste0(x[[i]], " needs to be of class ", what))
+    }
+  }
+  invisible(x)
+}
+
+#' Checking if parallel functionality is properly set up
+#' 
+#' @param x The parameter input to check
+#' @param call The caller environment to check in
+#' 
+#' @return Nothing if the check is passed, but an error if the check fails
+#' @noRd
+check_parallel <- function(x, call = rlang::caller_env()) {
+  
+  if (x) {
+    if (eval(!inherits(future::plan(), "sequential"), envir = call)) {
+      message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
+      message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
+    }
+  }
+  
+  invisible(x)
 }

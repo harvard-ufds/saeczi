@@ -62,53 +62,38 @@ saeczi <- function(samp_dat,
                    lin_formula,
                    log_formula = lin_formula,
                    domain_level,
-                   B = 100,
+                   B = 100L,
                    mse_est = FALSE,
                    estimand = "means",
                    parallel = FALSE) {
   
   funcCall <- match.call() 
   
-  if(!("formula" %in% class(lin_formula))) {
-    lin_formula <- as.formula(lin_formula)
-    message("lin_formula was converted to class 'formula'")
-  }
+  check_inherits(list(samp_dat, pop_dat), "data.frame")
+  check_inherits(list(lin_formula, log_formula), "formula")
+  check_inherits(list(domain_level, estimand), "character")
+  check_inherits(B, "integer")
+  check_inherits(list(mse_est, parallel), "logical")
   
-  if(!("formula" %in% class(log_formula))) {
-    log_formula <- as.formula(log_formula)
-    message("log_formula was converted to class 'formula'")
-  }
+  check_parallel(parallel)
   
   if(!(estimand %in% c("means", "totals"))) {
     stop("Invalid estimand, must be either 'means' or 'totals'")
   }
   
-  if (parallel && ("sequential" %in% class(future::plan()))) {
-    message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
-    message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
-  }
-  
   # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
   
-  lin_X <- unlist(str_extract_all_base(
-    deparse(lin_formula[[3]]),
-    "\\w+"
-  ))
+  lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
   
-  log_X <- unlist(str_extract_all_base(
-    deparse(log_formula[[3]]),
-    "\\w+"
-  ))
+  log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
   
   all_preds <- unique(lin_X, log_X)
   
-  original_out <- fit_zi(
-    samp_dat,
-    lin_formula,
-    log_formula,
-    domain_level
-  )
+  original_out <- fit_zi(samp_dat,
+                         lin_formula,
+                         log_formula,
+                         domain_level)
   
   mod1 <- original_out$lmer
   mod2 <- original_out$glmer
@@ -187,21 +172,9 @@ saeczi <- function(samp_dat,
       response = linear_preds * boot_dat_params$delta_i_star
     ) 
     
-    ## bootstrapping -------------------------------------------------------------
+    boot_lin_formula <- as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
     
-    boot_lin_formula <- as.formula(
-      paste0(
-        "response ~ ",
-        paste(lin_X, collapse = " + ")
-      )
-    )
-    
-    boot_log_formula <- as.formula(
-      paste0(
-        "response ~ ",
-        paste(log_X, collapse = " + ")
-      )
-    )
+    boot_log_formula <- as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
     
     if (estimand == "means") {
       boot_truth <- boot_pop_data |> 
@@ -217,7 +190,6 @@ saeczi <- function(samp_dat,
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
     
     if (parallel) {
-      
       with_progress({
         boot_res <- boot_rep_par(x = 1:B,
                                  boot_lst = boot_samp_ls,
@@ -230,9 +202,7 @@ saeczi <- function(samp_dat,
                                  lin_X,
                                  log_X)
         }) 
-      
     } else {
-      
       res <- 
         purrr::map(.x = boot_samp_ls,
                    .f = \(.x) { 
@@ -277,6 +247,7 @@ saeczi <- function(samp_dat,
                                  log_X = log_X,
                                  estimand = estimand)
       
+      
       log_lst <- res |>
         map(.f = ~ .x$log)
       
@@ -284,11 +255,8 @@ saeczi <- function(samp_dat,
       
     }
     
-    
-    mse_df <- setNames(
-      boot_res$preds,
-      c(domain_level, "mse")
-    )
+    mse_df <- setNames(boot_res$preds,
+                       c(domain_level, "mse"))
     
     final_df <- mse_df |> 
       left_join(original_pred, by = domain_level) 
