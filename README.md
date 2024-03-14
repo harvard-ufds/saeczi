@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
 <!-- badges: start -->
+
 [![R-CMD-check](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/harvard-ufds/saeczi/actions/workflows/R-CMD-check.yaml)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/saeczi)](https://CRAN.R-project.org/package=saeczi)
@@ -70,37 +70,36 @@ corresponding bootstrapped (B = 500) MSE estimate as follows.
 library(saeczi)
 data(pop)
 data(samp)
+
 result <- saeczi(samp_dat = samp,
                  pop_dat = pop, 
                  lin_formula =  DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
-                 log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev,
+                 log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
-                 B = 500L,
-                 parallel = FALSE)
+                 B = 500L)
 ```
 
-The function returns the original call, a data frame containing the
-estimates, a log of any modeling warnings and messages from the
-bootstrap procedure, as well as the linear and logistic model objects
-used to compute the estimates.
+The function returns the following objects:
 
-``` r
-names(result)
-#> [1] "call"          "res"           "bootstrap_log" "lin_mod"      
-#> [5] "log_mod"
-```
+| Name            | Description                                                               |
+|-----------------|---------------------------------------------------------------------------|
+| `call`          | The original function call                                                |
+| `res`           | A data.frame containing the estimates                                     |
+| `bootstrap_log` | A log of any modeling warnings or messages from the bootstrap procedure   |
+| `lin_mod`       | The linear model object of class `merMod` used to compute the estimates   |
+| `log_mod`       | The logistic model object of class `merMod` used to compute the estimates |
 
 As there are 36 total counties in Oregon, we will just look at the first
 few rows of the results:
 
 ``` r
 result$res |> head()
-#>   COUNTYFIPS       mse      est
-#> 1      41001  43.70587 14.85495
-#> 2      41003 203.05199 97.74967
-#> 3      41005  94.73864 86.02207
-#> 4      41007  76.49921 76.24752
-#> 5      41009 741.43291 70.28624
-#> 6      41011  78.89173 87.65072
+#>   COUNTYFIPS        mse       est
+#> 1      41001  417.11950  14.57288
+#> 2      41003  421.64584 103.33016
+#> 3      41005  111.43333  86.08616
+#> 4      41007   96.52381  78.79615
+#> 5      41009  142.46915  73.98920
+#> 6      41011 1115.01424  90.44174
 ```
