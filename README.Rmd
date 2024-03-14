@@ -69,7 +69,7 @@ result <- saeczi(samp_dat = samp,
 The function returns the following objects:
 
 | Name            | Description                                                               |
-|------------------------------------|------------------------------------|
+|:------------------------------------|:------------------------------------|
 | `call`          | The original function call                                                |
 | `res`           | A data.frame containing the estimates                                     |
 | `bootstrap_log` | A log of any modeling warnings or messages from the bootstrap procedure   |

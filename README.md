@@ -83,7 +83,7 @@ result <- saeczi(samp_dat = samp,
 The function returns the following objects:
 
 | Name            | Description                                                               |
-|-----------------|---------------------------------------------------------------------------|
+|:----------------|:--------------------------------------------------------------------------|
 | `call`          | The original function call                                                |
 | `res`           | A data.frame containing the estimates                                     |
 | `bootstrap_log` | A log of any modeling warnings or messages from the bootstrap procedure   |
@@ -96,10 +96,10 @@ few rows of the results:
 ``` r
 result$res |> head()
 #>   COUNTYFIPS        mse       est
-#> 1      41001  417.11950  14.57288
-#> 2      41003  421.64584 103.33016
-#> 3      41005  111.43333  86.08616
-#> 4      41007   96.52381  78.79615
-#> 5      41009  142.46915  73.98920
-#> 6      41011 1115.01424  90.44174
+#> 1      41001   48.87194  14.57288
+#> 2      41003   96.99512 103.33016
+#> 3      41005  916.54241  86.08616
+#> 4      41007  296.76596  78.79615
+#> 5      41009 1109.05314  73.98920
+#> 6      41011  478.07258  90.44174
 ```
