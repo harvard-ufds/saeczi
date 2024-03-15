@@ -81,3 +81,8 @@ As there are 36 total counties in Oregon, we will just look at the first few row
 ```{r}
 result$res |> head()
 ```
+
+### Parallelization
+
+
+

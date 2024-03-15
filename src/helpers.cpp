@@ -1,6 +1,5 @@
 // [[Rcpp::depends(RcppEigen)]]
 #include <vector>
-#include <cmath>
 #include <Rcpp.h>
 #include <RcppEigen.h>
 

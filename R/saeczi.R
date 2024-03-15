@@ -99,20 +99,7 @@ saeczi <- function(samp_dat,
   mod2 <- original_out$glmer
   .data <- pop_dat[ ,c(all_preds, domain_level)]
   
-  unit_level_preds <- setNames(
-    predict(mod1, newdata = .data, allow.new.levels = TRUE) * predict(mod2, newdata = .data, allow.new.levels = TRUE, type = "response"),
-    .data[ , domain_level, drop = T]
-  )
-  
-  if (estimand == "means") {
-    zi_domain_means <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = mean)
-    names(zi_domain_means) <- c(domain_level, "est")
-    original_pred <- zi_domain_means
-  } else {
-    zi_domain_totals <- aggregate(unit_level_preds, by = list(names(unit_level_preds)), FUN = sum)
-    names(zi_domain_totals) <- c(domain_level, "est")
-    original_pred <- zi_domain_totals
-  }
+  original_pred <- collect_preds(mod1, mod2, estimand, .data, domain_level)
   
   if (mse_est) {
     

@@ -493,3 +493,41 @@ check_parallel <- function(x, call = rlang::caller_env()) {
   
   invisible(x)
 }
+
+#' Fast aggregation
+#' 
+#' @noRd
+agg_stat <- function(vals, nms, .f) {
+  agg <- tapply(vals, nms, .f)
+  out <- data.frame(nms = names(agg), vals = agg)
+  out
+}
+
+#' Predict with both models and return result
+#' 
+#' @param mod1 Linear model object
+#' @param mod2 Logistic model object
+#' @param estimand Character, either "means" or "totals"
+#' @param .data The data to predict on
+#' @param domain_level Character name of domain variable in .data
+#' 
+#' @returns A data frame of results
+#' @noRd
+
+collect_preds <- function(mod1, mod2, estimand, .data, domain_level) {
+  
+  lin_pred <- predict(mod1, newdata = .data, allow.new.levels = TRUE)
+  log_pred <- predict(mod2, newdata = .data, type = "response", allow.new.levels = TRUE)
+    
+  unit_preds <- lin_pred * log_pred
+  
+  out <- switch(estimand,
+                "means" = agg_stat(unit_preds, .data[[domain_level]], mean),
+                "totals" = agg_stat(unit_preds, .data[[domain_level]], sum),
+                stop())
+  
+  
+  names(out) <- c(domain_level, "est")
+  out
+  
+}
