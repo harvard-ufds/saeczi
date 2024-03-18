@@ -177,7 +177,15 @@ generate_mse <- function(.data,
 
 #' Generate the Bootstrap population data
 #' 
+#' @param original_out List containing original model objects
+#' @param pop_dat The population data frame
+#' @param domain_level Character. The domain column names in pop_dat
+#' @param log_X Vector of characters containing logistic model predictor names
+#' @param all_preds Vector of characters containing all predictor names
 #' 
+#' @return The population bootstrap data
+#' @noRd
+
 generate_boot_pop <- function(original_out, 
                               pop_dat,
                               domain_level,
@@ -223,7 +231,7 @@ generate_boot_pop <- function(original_out,
   )
   
   x <- x_matrix[ , c("(Intercept)", log_X)] %*% zi_mod_coefs$alpha_1 + pop_b_i$b_i
-  p_hat_i <- .Call(stats:::C_logit_linkinv, x)
+  p_hat_i <- binomial()$linkinv(x)
   
   delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
   
@@ -560,6 +568,10 @@ check_parallel <- function(x, call = rlang::caller_env()) {
       message("In order for the internal processes to be run in parallel a `future::plan()` must be specified by the user")
       message("See <https://future.futureverse.org/reference/plan.html> for reference on how to use `future::plan()`")
     }
+  }
+  
+  if (future::nbrOfWorkers() == 1) {
+    warning("Argument `parallel` is set to true, but only one core is being used")
   }
   
   invisible(x)
