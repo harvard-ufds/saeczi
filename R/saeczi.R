@@ -108,9 +108,8 @@ saeczi <- function(samp_dat,
                                        log_X,
                                        all_preds)
     
-    boot_lin_formula <- as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
-    
-    boot_log_formula <- as.formula(paste0("response ~ ", paste(log_X, collapse = " + ")))
+    boot_lin_formula <- reformulate(lin_X, "response")
+    boot_log_formula <- reformulate(log_X, "response")
     
     if (estimand == "means") {
       boot_truth <- boot_pop_data |> 
