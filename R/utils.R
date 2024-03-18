@@ -150,6 +150,7 @@ generate_mse <- function(.data,
     colnames(to_append) <- diff
     u_lm <- cbind(u_lm, to_append)
   }
+
   
   dom_res_wide <- generate_preds(beta_lm = beta_lm_mat,
                                  beta_glm = beta_glm_mat,
@@ -171,6 +172,76 @@ generate_mse <- function(.data,
   )
   
   return(res_doms)
+  
+}
+
+#' Generate the Bootstrap population data
+#' 
+#' 
+generate_boot_pop <- function(original_out, 
+                              pop_dat,
+                              domain_level,
+                              log_X,
+                              all_preds) {
+  
+  zi_mod_coefs <- mse_coefs(original_out$lmer, original_out$glmer)
+  
+  params_and_domain <- setNames(
+    zi_mod_coefs$b_i,
+    zi_mod_coefs$domain_levels
+  )
+  
+  pop_b_i <- data.frame(
+    dom = pop_dat[ , domain_level, drop = TRUE],
+    b_i = params_and_domain[pop_dat[ , domain_level, drop = TRUE]]
+  )
+  
+  pop_b_i[is.na(pop_b_i$b_i), "b_i"] <- 0
+  
+  x_matrix <- model.matrix(
+    as.formula(paste0(" ~ ", paste(all_preds, collapse = " + "))),
+    data = pop_dat[ , all_preds, drop = FALSE]
+  )
+  
+  indv_re <- data.frame(
+    dom = pop_dat[ , domain_level, drop = TRUE],
+    eps_ij = rnorm(nrow(pop_dat), 0, sqrt(zi_mod_coefs$sig2_eps_hat))
+  )
+  
+  # tweak for allowing new levels
+  pop_doms <- unique(pop_dat[[domain_level]])
+  all_doms <- unique(pop_doms, zi_mod_coefs$domain_levels)
+  
+  area_re_lkp <- setNames(
+    rnorm(length(all_doms), 0, sqrt(zi_mod_coefs$sig2_mu_hat)),
+    all_doms
+  )
+  
+  rand_effs <- data.frame(
+    indv_re,
+    u_j = area_re_lkp[pop_dat[ , domain_level, drop = TRUE]]
+  )
+  
+  x <- x_matrix[ , c("(Intercept)", log_X)] %*% zi_mod_coefs$alpha_1 + pop_b_i$b_i
+  p_hat_i <- .Call(stats:::C_logit_linkinv, x)
+  
+  delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
+  
+  boot_dat_params <- list(
+    random_effects = rand_effs,
+    p_hat_i = p_hat_i,
+    delta_i_star = delta_i_star
+  )
+  
+  linear_preds <- (x_matrix[, colnames(model.matrix(original_out$lmer))] %*% zi_mod_coefs$beta_hat) +
+    boot_dat_params$random_effects$u_j + boot_dat_params$random_effects$eps_ij
+  
+  boot_pop_data <- data.frame(
+    pop_dat[ , c(domain_level, all_preds)],
+    response = linear_preds * boot_dat_params$delta_i_star
+  ) 
+  
+  return(boot_pop_data)
   
 }
 
@@ -492,6 +563,25 @@ check_parallel <- function(x, call = rlang::caller_env()) {
   }
   
   invisible(x)
+}
+
+#' Checking random effect column
+#' 
+#' @param pop_dat The population dataset to check
+#' @param domain_level Character. The domain level identifier.
+#' 
+#' @return Nothing if the check is passed, but and error if it fails
+#' @noRd
+check_re <- function(pop_dat, samp_dat, domain_level) {
+  if (!(domain_level %in% names(pop_dat))) {
+    stop(paste0("Column ", domain_level, " does not exist in pop_dat"))
+  }
+  if (!(domain_level %in% names(samp_dat))) {
+    stop(paste0("Column ", domain_level, " does not exist in samp_dat"))
+  }
+  if (!inherits(pop_dat[[domain_level]], "character") || !inherits(samp_dat[[domain_level]], "character")) {
+    stop(paste0("Column ", domain_level, " must be of type `character` in both pop_dat and samp_dat"))
+  }
 }
 
 #' Fast aggregation

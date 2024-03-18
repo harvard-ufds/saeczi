@@ -76,6 +76,8 @@ saeczi <- function(samp_dat,
   check_inherits(list(mse_est, parallel), "logical")
   
   check_parallel(parallel)
+
+  check_re(pop_dat, samp_dat, domain_level)
   
   if(!(estimand %in% c("means", "totals"))) {
     stop("Invalid estimand, must be either 'means' or 'totals'")
@@ -103,61 +105,11 @@ saeczi <- function(samp_dat,
   
   if (mse_est) {
     
-    zi_mod_coefs <- mse_coefs(original_out$lmer, original_out$glmer)
-    
-    params_and_domain <- setNames(
-      zi_mod_coefs$b_i,
-      zi_mod_coefs$domain_levels
-    )
-    
-    pop_b_i <- data.frame(
-      dom = pop_dat[ , domain_level, drop = TRUE],
-      b_i = params_and_domain[pop_dat[ , domain_level, drop = TRUE]]
-    )
-    
-    pop_b_i[is.na(pop_b_i$b_i), "b_i"] <- 0
-    
-    x_matrix <- model.matrix(
-      as.formula(paste0(" ~ ", paste(all_preds, collapse = " + "))),
-      data = pop_dat[ , all_preds, drop = FALSE]
-    )
-    
-    indv_re <- data.frame(
-      dom = pop_dat[ , domain_level, drop = TRUE],
-      eps_ij = rnorm(nrow(pop_dat), 0, sqrt(zi_mod_coefs$sig2_eps_hat))
-    )
-    
-    # tweak for allowing new levels
-    pop_doms <- unique(pop_dat[[domain_level]])
-    all_doms <- unique(pop_doms, zi_mod_coefs$domain_levels)
-    
-    area_re_lkp <- setNames(
-      rnorm(length(all_doms), 0, sqrt(zi_mod_coefs$sig2_mu_hat)),
-      all_doms
-    )
-    
-    rand_effs <- data.frame(
-      indv_re,
-      u_j = area_re_lkp[pop_dat[ , domain_level, drop = TRUE]]
-    )
-    
-    p_hat_i <- 1/(1 + exp(-(x_matrix[ , c("(Intercept)", log_X)] %*% zi_mod_coefs$alpha_1 + pop_b_i$b_i)))
-    
-    delta_i_star <- rbinom(length(p_hat_i), 1, p_hat_i)
-    
-    boot_dat_params <- list(
-      random_effects = rand_effs,
-      p_hat_i = p_hat_i,
-      delta_i_star = delta_i_star
-    )
-
-    linear_preds <- (x_matrix[, colnames(model.matrix(original_out$lmer))] %*% zi_mod_coefs$beta_hat) +
-      boot_dat_params$random_effects$u_j + boot_dat_params$random_effects$eps_ij
-
-    boot_pop_data <- data.frame(
-      pop_dat[ , c(domain_level, all_preds)],
-      response = linear_preds * boot_dat_params$delta_i_star
-    ) 
+    boot_pop_data <- generate_boot_pop(original_out,
+                                       pop_dat,
+                                       domain_level,
+                                       log_X,
+                                       all_preds)
     
     boot_lin_formula <- as.formula(paste0("response ~ ", paste(lin_X, collapse = " + ")))
     
@@ -193,6 +145,7 @@ saeczi <- function(samp_dat,
       names(boot_res) <- c("preds", "log")
       
     } else {
+      
       res <- 
         purrr::map(.x = boot_samp_ls,
                    .f = \(.x) { 
@@ -236,7 +189,6 @@ saeczi <- function(samp_dat,
                                  lin_X = lin_X,
                                  log_X = log_X,
                                  estimand = estimand)
-      
       
       log_lst <- res |>
         map(.f = ~ .x$log)
