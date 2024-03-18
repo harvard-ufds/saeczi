@@ -76,18 +76,15 @@ saeczi <- function(samp_dat,
   check_inherits(list(mse_est, parallel), "logical")
   
   check_parallel(parallel)
-
   check_re(pop_dat, samp_dat, domain_level)
   
   if(!(estimand %in% c("means", "totals"))) {
     stop("Invalid estimand, must be either 'means' or 'totals'")
   }
   
-  # creating strings of original X, Y names
   Y <- deparse(lin_formula[[2]])
   
   lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
-  
   log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
   
   all_preds <- unique(lin_X, log_X)
@@ -125,7 +122,6 @@ saeczi <- function(samp_dat,
         summarise(domain_est = sum(response))
     }
 
-    # create bootstrap samples 
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B) 
     
     if (parallel) {
@@ -175,8 +171,6 @@ saeczi <- function(samp_dat,
         map_dfr(.f = ~ .x$params$u_glm) |> 
         as.matrix()
       
-      # sometimes u_lm will have fewer domains once it is filtered
-      # down to positive response values
       u_lm[is.na(u_lm)] <- 0
       
       preds_full <- generate_mse(.data = boot_pop_data,
