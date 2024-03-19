@@ -570,7 +570,7 @@ check_parallel <- function(x, call = rlang::caller_env()) {
     }
   }
   
-  if (future::nbrOfWorkers() == 1) {
+  if (x && future::nbrOfWorkers() == 1) {
     warning("Argument `parallel` is set to true, but only one core is being used")
   }
   
