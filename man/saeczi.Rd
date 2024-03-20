@@ -43,8 +43,6 @@ The object is structured like a list and contains the following elements:
 
 * res: A data.frame containing the estimates and mse estimates
 
-* bootstrap_log: A list containing any messages and warnings that occur during the bootstrap process
-
 * lin_mod: The modeling object used to fit the original linear model
 
 * log_mod: The modeling object used to fit the original logistic model

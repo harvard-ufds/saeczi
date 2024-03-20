@@ -77,7 +77,7 @@ result <- saeczi(samp_dat = samp,
                  log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
-                 B = 500L)
+                 B = 1000L)
 ```
 
 The function returns the following objects:
@@ -95,11 +95,13 @@ few rows of the results:
 
 ``` r
 result$res |> head()
-#>   COUNTYFIPS        mse       est
-#> 1      41001   48.87194  14.57288
-#> 2      41003   96.99512 103.33016
-#> 3      41005  916.54241  86.08616
-#> 4      41007  296.76596  78.79615
-#> 5      41009 1109.05314  73.98920
-#> 6      41011  478.07258  90.44174
+#>   COUNTYFIPS      mse       est
+#> 1      41001 216.3487  14.57288
+#> 2      41003 144.6466 103.33016
+#> 3      41005 276.4164  86.08616
+#> 4      41007 584.4503  78.79615
+#> 5      41009 169.2617  73.98920
+#> 6      41011 656.6422  90.44174
 ```
+
+### Parallelization

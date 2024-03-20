@@ -63,7 +63,7 @@ result <- saeczi(samp_dat = samp,
                  log_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
                  domain_level = "COUNTYFIPS",
                  mse_est = TRUE,
-                 B = 500L)
+                 B = 1000L)
 ```
 
 The function returns the following objects:

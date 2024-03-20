@@ -66,37 +66,18 @@ fit_zi <- function(samp_dat,
                    domain_level) {
   
   Y <- deparse(lin_formula[[2]])
-  lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
-  log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
-  
-  # function will always treat domain_level as the random intercept
-  rand_intercept <- paste0("( 1 | ", domain_level, " )")
-  
-  # of form y ~ x_1 + ... + x_n + (1 | domain_level)
-  lin_reg_formula <- stats::as.formula(
-    paste0(deparse(lin_formula[[2]]), " ~ ",
-           paste(lin_X, collapse = " + "), " + ",
-           rand_intercept)
-  )
-  
-  # of form y != 0 ~ x_1 + ... + x_n + (1 | domain_level)
-  log_reg_formula <- stats::as.formula(
-    paste0(deparse(log_formula[[2]]), " != 0 ~ ",
-           paste(log_X, collapse = " + "), " + ",
-           rand_intercept)
-  )
   
   # creating nonzero version of our sample data set
-  nz <- samp_dat[samp_dat[ , Y] > 0, ]
+  nz <- samp_dat[samp_dat[[Y]] > 0, ]
   
   # fit linear mixed model on nonzero data
   lmer_nz <- suppressMessages(
-    lme4::lmer(lin_reg_formula, data = nz)
+    lme4::lmer(lin_formula, data = nz)
   )
   
   # Fit logistic mixed effects on ALL data
   glmer_z <- suppressMessages(
-    lme4::glmer(log_reg_formula, data = samp_dat, family = 'binomial')
+    lme4::glmer(log_formula, data = samp_dat, family = 'binomial')
   )
   
   return(list(lmer = lmer_nz, glmer = glmer_z))
@@ -324,10 +305,7 @@ boot_rep_par <- function(x,
                              log_X = log_X,
                              estimand = estimand)
   
-  log_lst <- res |>
-    map(.f = ~ .x$log)
-  
-  list(preds_full, log_lst)
+  return(list(preds = preds_full))
   
 }
 
@@ -371,8 +349,8 @@ str_extract_all_base <- function(string, pattern) {
 mod_param_fmt <- function(.fit, ref = NULL) {
   
   if (!is.null(.fit)) {
-    .lmer <- .fit$result$lmer
-    .glmer <- .fit$result$glmer
+    .lmer <- .fit$lmer
+    .glmer <- .fit$glmer
     
     beta_lm <- lme4::fixef(.lmer)
     beta_glm <- lme4::fixef(.glmer)
@@ -429,18 +407,15 @@ boot_rep <- function(boot_samp,
                      boot_lin_formula,
                      boot_log_formula) {
   
-  # capture warnings and messages silently when bootstrapping
-  fit_zi_capture <- capture_all(fit_zi)
-  
   boot_samp_fit  <- tryCatch(
     {
-      out <- fit_zi_capture(boot_samp,
-                            boot_lin_formula,
-                            boot_log_formula,
-                            domain_level)
+      out <- fit_zi(boot_samp,
+                    boot_lin_formula,
+                    boot_log_formula,
+                    domain_level)
       
       ps <- mod_param_fmt(out)
-      return(list(params = ps, log = out$log))
+      return(ps)
       
     },
     error = function(cond) {
@@ -454,12 +429,12 @@ boot_rep <- function(boot_samp,
                                      .lm = lm_cfs,
                                      .glm = glm_cfs))
       
-      return(list(params = ps, log = cond))
+      return(ps)
       
     }
   )
   
-  return(list(params_ls = boot_samp_fit$params, log = boot_samp_fit$log))
+  return(boot_samp_fit)
   
 }
 
