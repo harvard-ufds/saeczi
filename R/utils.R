@@ -131,7 +131,6 @@ generate_mse <- function(.data,
     colnames(to_append) <- diff
     u_lm <- cbind(u_lm, to_append)
   }
-
   
   dom_res_wide <- generate_preds(beta_lm = beta_lm_mat,
                                  beta_glm = beta_glm_mat,
@@ -275,20 +274,21 @@ boot_rep_par <- function(x,
                       .options = furrr_options(seed = TRUE))
   
   beta_lm_mat <- res |>
-    map_dfr(.f = ~ .x$params$beta_lm) |>
+    map_dfr(.f = ~ .x$beta_lm) |>
     as.matrix()
   
   beta_glm_mat <- res |>
-    map_dfr(.f = ~ .x$params$beta_glm) |>
+    map_dfr(.f = ~ .x$beta_glm) |>
     as.matrix()
   
   u_lm <- res |> 
-    map_dfr(.f = ~ .x$params$u_lm) |> 
+    map_dfr(.f = ~ .x$u_lm) |> 
     as.matrix()
   
   u_glm <- res |> 
-    map_dfr(.f = ~ .x$params$u_glm) |> 
+    map_dfr(.f = ~ .x$u_glm) |> 
     as.matrix()
+  
   
   # sometimes u_lm will have fewer domains once it is filtered
   # down to positive response values
