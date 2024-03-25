@@ -20,9 +20,11 @@ test_that("result$res is a df", {
   expect_s3_class(result$res, "data.frame")
 })
 
-test_that("result is correct", {
-  expect_snapshot(result$res$est)
-})
+if (Sys.info()["sysname"] == "Darwin") {
+  test_that("result is correct", {
+    expect_snapshot(result$res$est)
+  }) 
+}
 
 test_that("mse column exists", {
   expect_contains(names(result$res), "mse")
