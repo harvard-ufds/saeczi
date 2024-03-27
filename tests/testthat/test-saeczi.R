@@ -8,13 +8,15 @@ samp <- samp |>
   
 
 set.seed(5)
-result <- saeczi(samp,
-                 pop, 
-                 lin_formula,
-                 domain_level = "COUNTYFIPS",
-                 mse_est = TRUE,
-                 B = 10L,
-                 parallel = FALSE)
+suppressWarnings(
+  result <- saeczi(samp,
+                   pop, 
+                   lin_formula,
+                   domain_level = "COUNTYFIPS",
+                   mse_est = TRUE,
+                   B = 10L,
+                   parallel = FALSE)
+)
 
 test_that("result$res is a df", {
   expect_s3_class(result$res, "data.frame")
