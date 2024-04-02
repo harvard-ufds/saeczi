@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 `saeczi` is an R package that implements a small area estimator that uses a two-stage modeling approach for zero-inflated response variables. In particular, we are working with variables that follow a semi-continuous distribution with a mixture of zeroes and positive continuously distributed values. An example can be seen below.
 
-![](figs/README-zi-plot-1.png){width = 70%}
+![](figs/README-zi-plot-1.png){width=60%}
 
 `saeczi` first fits a linear mixed model to the non-zero portion of the response and then a generalized linear mixed model with binomial response to classify the probability of zero for a given data point. In estimation these models are each applied to new data points and combined to compute a final prediction.
 

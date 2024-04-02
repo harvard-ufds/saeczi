@@ -19,7 +19,7 @@ In particular, we are working with variables that follow a
 semi-continuous distribution with a mixture of zeroes and positive
 continuously distributed values. An example can be seen below.
 
-![](figs/README-zi-plot-1.png){width = 70%}
+<img src="figs/README-zi-plot-1.png" style="width:60.0%" />
 
 `saeczi` first fits a linear mixed model to the non-zero portion of the
 response and then a generalized linear mixed model with binomial
@@ -97,13 +97,13 @@ few rows of the results:
 
 ``` r
 result$res |> head()
-#>   COUNTYFIPS         mse       est
-#> 1      41001   524.33803  14.57288
-#> 2      41003  1176.47914 103.33016
-#> 3      41005 18891.79642  86.08616
-#> 4      41007    27.43582  78.79615
-#> 5      41009  4674.77845  73.98920
-#> 6      41011    14.29977  90.44174
+#>   COUNTYFIPS        mse       est
+#> 1      41001   222.8002  14.57288
+#> 2      41003  1076.2263 103.33016
+#> 3      41005 11531.0003  86.08616
+#> 4      41007  2547.4668  78.79615
+#> 5      41009  2432.7100  73.98920
+#> 6      41011  1053.2496  90.44174
 ```
 
 ### Parallelization
