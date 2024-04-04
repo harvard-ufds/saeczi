@@ -84,26 +84,25 @@ result <- saeczi(samp_dat = samp,
 
 The function returns the following objects:
 
-| Name            | Description                                                               |
-|:----------------|:--------------------------------------------------------------------------|
-| `call`          | The original function call                                                |
-| `res`           | A data.frame containing the estimates                                     |
-| `bootstrap_log` | A log of any modeling warnings or messages from the bootstrap procedure   |
-| `lin_mod`       | The linear model object of class `merMod` used to compute the estimates   |
-| `log_mod`       | The logistic model object of class `merMod` used to compute the estimates |
+| Name      | Description                                                               |
+|:----------|:--------------------------------------------------------------------------|
+| `call`    | The original function call                                                |
+| `res`     | A data.frame containing the estimates                                     |
+| `lin_mod` | The linear model object of class `merMod` used to compute the estimates   |
+| `log_mod` | The logistic model object of class `merMod` used to compute the estimates |
 
 As there are 36 total counties in Oregon, we will just look at the first
 few rows of the results:
 
 ``` r
 result$res |> head()
-#>   COUNTYFIPS        mse       est
-#> 1      41001   222.8002  14.57288
-#> 2      41003  1076.2263 103.33016
-#> 3      41005 11531.0003  86.08616
-#> 4      41007  2547.4668  78.79615
-#> 5      41009  2432.7100  73.98920
-#> 6      41011  1053.2496  90.44174
+#>   COUNTYFIPS       mse       est
+#> 1      41001  580.9639  14.57288
+#> 2      41003  935.5949 103.33016
+#> 3      41005  354.9449  86.08616
+#> 4      41007 2641.2648  78.79615
+#> 5      41009 1450.9188  73.98920
+#> 6      41011  641.2264  90.44174
 ```
 
 ### Parallelization

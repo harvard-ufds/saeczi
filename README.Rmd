@@ -75,7 +75,6 @@ The function returns the following objects:
 |:------------------------------------|:------------------------------------|
 | `call`          | The original function call                                                |
 | `res`           | A data.frame containing the estimates                                     |
-| `bootstrap_log` | A log of any modeling warnings or messages from the bootstrap procedure   |
 | `lin_mod`       | The linear model object of class `merMod` used to compute the estimates   |
 | `log_mod`       | The logistic model object of class `merMod` used to compute the estimates |
 
