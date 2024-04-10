@@ -32,8 +32,7 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
     dplyr::mutate(map_args = list(list(n.x, n.y, add_to))) 
   
   all_samps <- vector("list", length = B)
-  ord <- rep(setup[[dom_nm]], times = setup$n.x)
-  pop_ordered <- pop[match(ord, pop[[dom_nm]]), ]
+  pop_ordered <- pop[order(pop[[dom_nm]]), ]
   
   for (i in 1:B) {
     ids <- setup |>

@@ -36,7 +36,7 @@ saeczi(
 \item{parallel}{Compute MSE estimation in parallel}
 }
 \value{
-An object of class `zi_mod` with defined `print()` and `summary()` methods. 
+An object of class `zi_mod` with defined `print()` and `summary()` methods.
 The object is structured like a list and contains the following elements:
 
 * call: The original function call
@@ -68,7 +68,7 @@ data(samp)
 lin_formula <- DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev
 
 result <- saeczi(samp,
-                 pop, 
+                 pop,
                  lin_formula,
                  log_formula = lin_formula,
                  domain_level = "COUNTYFIPS",
