@@ -28,6 +28,10 @@ if (Sys.info()["sysname"] == "Darwin") {
   }) 
 }
 
+test_that("mse column is not NA", {
+  expect_equal(all(!is.na(result$res$mse)), T)
+})
+
 test_that("mse column exists", {
   expect_contains(names(result$res), "mse")
 })
