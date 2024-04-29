@@ -88,7 +88,7 @@ saeczi <- function(samp_dat,
   lin_formula <- reformulate(c(lin_X, rand_intercept), response = Y)
   log_formula <- reformulate(c(log_X, rand_intercept), response = paste0(Y, "!= 0"))
 
-  all_preds <- unique(lin_X, log_X)
+  all_preds <- unique(c(lin_X, log_X))
 
   original_out <- fit_zi(samp_dat,
                          lin_formula,
