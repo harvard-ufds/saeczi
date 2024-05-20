@@ -2,7 +2,7 @@
 % Please edit documentation in R/saeczi.R
 \name{saeczi}
 \alias{saeczi}
-\title{Fit a zero-inflation estimator to a dataset}
+\title{Fit a zero-inflation estimator.}
 \usage{
 saeczi(
   samp_dat,
@@ -17,23 +17,23 @@ saeczi(
 )
 }
 \arguments{
-\item{samp_dat}{A dataframe with domains, predictor variables, and the response variable of a sample}
+\item{samp_dat}{A data.frame with domains, auxiliary variables, and the response variable of a sample}
 
-\item{pop_dat}{A dataframe with domains and predictor variables of a population}
+\item{pop_dat}{A data.frame with domains and auxiliary variables of a population.}
 
-\item{lin_formula}{model formula for the linear regression model}
+\item{lin_formula}{Formula. Specification of the response and fixed effects of the linear regression model}
 
-\item{log_formula}{model formula for the logistic regression model}
+\item{log_formula}{Formula. Specification of the response and fixed effects of the logistic regression model}
 
-\item{domain_level}{A string of the column name in the dataframes that reflect the domain level}
+\item{domain_level}{String. The column name in samp_dat and pop_dat that encodes the domain level}
 
-\item{B}{An integer of the number of reps desired for the bootstrap}
+\item{B}{Integer. The number of bootstraps to be used in MSE estimation.}
 
-\item{mse_est}{A boolean that specifies if the user}
+\item{mse_est}{Logical. Whether or not MSE estimation should happen.}
 
-\item{estimand}{A string specifying whether the estimates should be 'totals' or 'means'.}
+\item{estimand}{String. Whether the estimates should be 'totals' or 'means'.}
 
-\item{parallel}{Compute MSE estimation in parallel}
+\item{parallel}{Logical. Should the MSE estimation be computed in parallel}
 }
 \value{
 An object of class `zi_mod` with defined `print()` and `summary()` methods.
@@ -48,18 +48,7 @@ The object is structured like a list and contains the following elements:
 * log_mod: The modeling object used to fit the original logistic model
 }
 \description{
-Calculate the domain predictions using the zero-inflation estimator, and outputs
-those domain-level predictions, in the form of a dataframe. It contains
-the estimates for each domain, as well as the mean squared error estimates should
-the user choose. The output of the function is a list, with the first item being
-said dataframe, and the second being the R squared value of the model.
-}
-\details{
-The arguments `lin_formula`, and `log_formula`
-can be unquoted or quoted. The function can handle both forms.
-
-The two datasets (pop_dat and samp_dat) must have the same column names for the domain level,
-as well as the predictor variables for the function to work.
+Fit a zero-inflation estimator.
 }
 \examples{
 data(pop)
@@ -67,9 +56,9 @@ data(samp)
 
 lin_formula <- DRYBIO_AG_TPA_live_ADJ ~ tcc16 + elev
 
-result <- saeczi(samp,
-                 pop,
-                 lin_formula,
+result <- saeczi(samp_dat = samp,
+                 pop_dat = pop,
+                 lin_formula = lin_formula,
                  log_formula = lin_formula,
                  domain_level = "COUNTYFIPS",
                  mse_est = FALSE)
