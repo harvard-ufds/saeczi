@@ -40,3 +40,4 @@ Depends:
 LinkingTo:
     Rcpp,
     RcppEigen
+URL: https://harvard-ufds.github.io/saeczi/
