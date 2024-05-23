@@ -1,7 +1,5 @@
 // [[Rcpp::depends(RcppEigen)]]
-#include <vector>
-#include <Rcpp.h>
-#include <RcppEigen.h>
+#include "helpers.h"
 
 double sigmoid(double x) {
   return 1.0 / (1.0 + std::exp(-x));
@@ -19,8 +17,8 @@ void preds_calc(Eigen::MatrixXd& result,
                 std::string estimand) {
   
   // these are N_j x B
-  Eigen::MatrixXd pred_lm_j = (dmat_lm * beta_lm.transpose());
-  Eigen::MatrixXd pred_glm_j = (dmat_glm * beta_glm.transpose());
+  Eigen::MatrixXd pred_lm_j = dmat_lm * beta_lm.transpose();
+  Eigen::MatrixXd pred_glm_j = dmat_glm * beta_glm.transpose();
   
   pred_lm_j.rowwise() += u_lm.col(j).transpose();
   pred_glm_j.rowwise() += u_glm.col(j).transpose();

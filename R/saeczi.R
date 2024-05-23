@@ -68,7 +68,7 @@ saeczi <- function(samp_dat,
     stop("Invalid estimand, must be either 'means' or 'totals'")
   }
 
-  Y <- deparse(lin_formula[[2]])
+  Y <- toString(lin_formula[[2]])
 
   lin_X <- unlist(str_extract_all_base(deparse(lin_formula[[3]]), "\\w+"))
   log_X <- unlist(str_extract_all_base(deparse(log_formula[[3]]), "\\w+"))
@@ -132,17 +132,17 @@ saeczi <- function(samp_dat,
     } else {
 
       res <-
-        purrr::map(.x = boot_samp_ls,
-                   .f = \(.x) {
-                     boot_rep(boot_samp = .x,
-                              domain_level,
-                              boot_lin_formula,
-                              boot_log_formula)
-                   },
-                   .progress = list(
-                     type = "iterator",
-                     clear = TRUE
-                   ))
+        map(.x = boot_samp_ls,
+            .f = \(.x) {
+              boot_rep(boot_samp = .x,
+                       domain_level,
+                       boot_lin_formula,
+                       boot_log_formula)
+            },
+            .progress = list(
+              type = "iterator",
+              clear = TRUE
+            ))
 
       beta_lm_mat <- res |>
         map_dfr(.f = ~ .x$beta_lm) |>
