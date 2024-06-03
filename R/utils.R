@@ -516,18 +516,21 @@ capture_all <- function(.f){
 
 #' Checking if a param inherits a class
 #' 
-#' @param x The parameter input(s) to check
 #' @param what What class to check if the parameter input inherits
+#' @param ... The parameter input(s) to check
 #' 
 #' @return Nothing if the check is passed, but an error if the check fails
 #' @noRd
-check_inherits <- function(x, what) {
-  for (i in seq_along(x)) {
-    if (!inherits(x[[i]], what)) {
-      stop(paste0(x[[i]], " needs to be of class ", what))
+check_inherits <- function(what, ...) {
+  opts <- list(...)
+  for (i in seq_along(opts)) {
+    if (!is.null(opts[[i]])) {
+      if (!inherits(opts[[i]], what)) {
+        stop(paste0(opts[[i]], " needs to be of class ", what))
+      }
     }
-  }
-  invisible(x)
+  } # i
+  invisible(opts)
 }
 
 #' Checking if parallel functionality is properly set up

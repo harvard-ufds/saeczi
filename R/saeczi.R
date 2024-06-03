@@ -55,12 +55,12 @@ saeczi <- function(samp_dat,
 
   funcCall <- match.call()
 
-  check_inherits(list(samp_dat, pop_dat), "data.frame")
-  check_inherits(list(lin_formula, log_formula), "formula")
-  check_inherits(list(domain_level, estimand), "character")
-  check_inherits(B, "integer")
-  check_inherits(list(mse_est, parallel), "logical")
-
+  check_inherits("data.frame", samp_dat, pop_dat)
+  check_inherits("formula", lin_formula, log_formula)
+  check_inherits("character", domain_level, estimand)
+  check_inherits("integer", B)
+  check_inherits("logical", mse_est, parallel)
+  
   check_parallel(parallel)
   check_re(pop_dat, samp_dat, domain_level)
 
