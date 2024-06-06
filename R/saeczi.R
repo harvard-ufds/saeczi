@@ -127,7 +127,7 @@ saeczi <- function(samp_dat,
                                  log_X)
         })
 
-      names(boot_res) <- c("preds", "log")
+      names(boot_res) <- c("preds")
 
     } else {
 
