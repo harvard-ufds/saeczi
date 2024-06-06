@@ -14,6 +14,22 @@ and received
 
 0 errors | 0 warnings | 0 notes
 
+## Resubmission
+
+This fixes a few minor bugs.
+
+The package was tested on the following systems:
+
+* macos-latest (release)
+* windows-latest (devel)
+* ubuntu-latest (devel)
+* ububtu-latest (release)
+* ubuntu-latest (oldrel-1)
+
+and received
+
+0 errors | 0 warnings | 0 notes
+
 
 ## Resubmission
 
