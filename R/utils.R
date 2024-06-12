@@ -306,7 +306,7 @@ boot_rep_par <- function(x,
                              log_X = log_X,
                              estimand = estimand)
   
-  return(list(preds = preds_full))
+  return(preds_full)
   
 }
 

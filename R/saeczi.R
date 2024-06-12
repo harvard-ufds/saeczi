@@ -103,11 +103,11 @@ saeczi <- function(samp_dat,
 
     if (estimand == "means") {
       boot_truth <- boot_pop_data |>
-        group_by(!!rlang::sym(domain_level)) |>
+        group_by(!!sym(domain_level)) |>
         summarise(domain_est = mean(response))
     } else {
       boot_truth <- boot_pop_data |>
-        group_by(!!rlang::sym(domain_level)) |>
+        group_by(!!sym(domain_level)) |>
         summarise(domain_est = sum(response))
     }
 
@@ -126,8 +126,6 @@ saeczi <- function(samp_dat,
                                  lin_X,
                                  log_X)
         })
-
-      names(boot_res) <- c("preds")
 
     } else {
 
@@ -174,11 +172,11 @@ saeczi <- function(samp_dat,
                                  estimand = estimand)
     
 
-      boot_res <- list(preds = preds_full)
+      boot_res <- preds_full
 
     }
 
-    mse_df <- setNames(boot_res$preds,
+    mse_df <- setNames(boot_res,
                        c(domain_level, "mse"))
 
     final_df <- mse_df |>
