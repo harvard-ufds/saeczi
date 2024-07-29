@@ -6,7 +6,7 @@ tags:
   - zero-inflated models
 authors:
   - name: Josh K. Yamamoto
-    orcid: XXXX-XXXX-XXXX-XXXX
+    orcid: 0009-0007-9919-1685
     affiliation: 1
 affiliations:
  - name: Redcastle Resources, Inc.
