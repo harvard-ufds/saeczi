@@ -275,19 +275,23 @@ boot_rep_par <- function(x,
                       .options = furrr_options(seed = TRUE))
   
   beta_lm_mat <- res |>
-    map_dfr(.f = ~ .x$beta_lm) |>
+    map(.f = ~ as.data.frame(t(.x$beta_lm))) |>
+    list_rbind() |> 
     as.matrix()
   
   beta_glm_mat <- res |>
-    map_dfr(.f = ~ .x$beta_glm) |>
+    map(.f = ~ as.data.frame(t(.x$beta_glm))) |>
+    list_rbind() |>
     as.matrix()
   
   u_lm <- res |> 
-    map_dfr(.f = ~ .x$u_lm) |> 
+    map(.f = ~ as.data.frame(t(.x$u_lm))) |> 
+    list_rbind() |> 
     as.matrix()
   
   u_glm <- res |> 
-    map_dfr(.f = ~ .x$u_glm) |> 
+    map(.f = ~ as.data.frame(t(.x$u_glm))) |> 
+    list_rbind() |> 
     as.matrix()
   
   

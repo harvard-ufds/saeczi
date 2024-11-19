@@ -41,7 +41,7 @@
 #' @importFrom dplyr summarise group_by mutate left_join
 #' @importFrom progressr progressor with_progress
 #' @importFrom furrr future_map furrr_options future_map2
-#' @importFrom purrr map map2 map_dfr
+#' @importFrom purrr map map2 list_rbind
 
 saeczi <- function(samp_dat,
                    pop_dat,
@@ -143,19 +143,23 @@ saeczi <- function(samp_dat,
             ))
 
       beta_lm_mat <- res |>
-        map_dfr(.f = ~ .x$beta_lm) |>
+        map(.f = ~ as.data.frame(t(.x$beta_lm))) |>
+        list_rbind() |> 
         as.matrix()
 
       beta_glm_mat <- res |>
-        map_dfr(.f = ~ .x$beta_glm) |>
+        map(.f = ~ as.data.frame(t(.x$beta_glm))) |>
+        list_rbind() |> 
         as.matrix()
 
       u_lm <- res |>
-        map_dfr(.f = ~ .x$u_lm) |>
+        map(.f = ~ as.data.frame(t(.x$u_lm))) |>
+        list_rbind() |> 
         as.matrix()
 
       u_glm <- res |>
-        map_dfr(.f = ~ .x$u_glm) |>
+        map(.f = ~ as.data.frame(t(.x$u_glm))) |>
+        list_rbind() |> 
         as.matrix()
 
       u_lm[is.na(u_lm)] <- 0
