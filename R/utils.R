@@ -64,9 +64,14 @@ samp_by_grp <- function(samp, pop, dom_nm, B) {
 fit_zi <- function(samp_dat,
                    lin_formula,
                    log_formula,
-                   domain_level) {
+                   domain_level,
+                   transform_fun = NULL) {
   
   Y <- deparse(lin_formula[[2]])
+  
+  if (!is.null(transform_fun)) {
+    samp_dat[[Y]] <- transform_fun(samp_dat[[Y]])
+  } 
   
   # creating nonzero version of our sample data set
   nz <- samp_dat[samp_dat[[Y]] > 0, ]
@@ -109,7 +114,8 @@ generate_mse <- function(.data,
                          u_glm,
                          lin_X,
                          log_X,
-                         estimand) {
+                         estimand,
+                         inv) {
   
   boot_pop_by_dom <- split(.data, f = .data[[domain_level]])
   
@@ -139,7 +145,8 @@ generate_mse <- function(.data,
                                  u_glm = u_glm,
                                  design_mats = design_mat_ls,
                                  J = n_doms,
-                                 estimand = estimand)
+                                 estimand = estimand,
+                                 inv = inv)
   
   truth_ordered <- truth[order(match(truth[[domain_level]], dom_order)), ]
   truth_vec <- truth_ordered$domain_est
@@ -171,7 +178,8 @@ generate_boot_pop <- function(original_out,
                               pop_dat,
                               domain_level,
                               log_X,
-                              all_preds) {
+                              all_preds,
+                              transform_fun) {
   
   zi_mod_coefs <- mse_coefs(original_out$lmer, original_out$glmer)
   
@@ -230,6 +238,10 @@ generate_boot_pop <- function(original_out,
     response = linear_preds * boot_dat_params$delta_i_star
   ) 
   
+  # if (!is.null(transform_fun)) {
+  #   boot_pop_data$response <- transform_fun(boot_pop_data$response)
+  # }
+  
   return(boot_pop_data)
   
 }
@@ -259,7 +271,8 @@ boot_rep_par <- function(x,
                          boot_truth,
                          estimand,
                          lin_X,
-                         log_X) {
+                         log_X,
+                         inv_transform_fun) {
   
   p <- progressor(steps = length(x))
   
@@ -308,7 +321,8 @@ boot_rep_par <- function(x,
                              u_glm = u_glm,
                              lin_X = lin_X,
                              log_X = log_X,
-                             estimand = estimand)
+                             estimand = estimand,
+                             inv = inv_transform_fun)
   
   return(preds_full)
   
@@ -532,6 +546,8 @@ check_inherits <- function(what, ...) {
       if (!inherits(opts[[i]], what)) {
         stop(paste0(opts[[i]], " needs to be of class ", what))
       }
+    } else {
+      stop("unable to check NULL objects")
     }
   } # i
   invisible(opts)
@@ -599,12 +615,17 @@ agg_stat <- function(vals, nms, .f) {
 #' @returns A data frame of results
 #' @noRd
 
-collect_preds <- function(mod1, mod2, estimand, .data, domain_level) {
+collect_preds <- function(mod1, mod2, estimand, .data, domain_level, inv_transform_fun) {
   
   lin_pred <- predict(mod1, newdata = .data, allow.new.levels = TRUE)
   log_pred <- predict(mod2, newdata = .data, type = "response", allow.new.levels = TRUE)
-    
+  
+  if (!is.null(inv_transform_fun)) {
+    lin_pred <- inv_transform_fun(lin_pred)
+  }
+  
   unit_preds <- lin_pred * log_pred
+
   
   out <- switch(estimand,
                 "means" = agg_stat(unit_preds, .data[[domain_level]], mean),

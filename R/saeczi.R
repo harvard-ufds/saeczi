@@ -8,7 +8,9 @@
 #' @param B Integer. The number of bootstraps to be used in MSE estimation.
 #' @param mse_est Logical. Whether or not MSE estimation should happen.
 #' @param estimand String. Whether the estimates should be 'totals' or 'means'.
-#' @param parallel Logical. Should the MSE estimation be computed in parallel
+#' @param parallel Logical. Should the MSE estimation be computed in parallel.
+#' @param transform_fun Function. Function to be applied to the response variable prior to modeling.
+#' @param inv_transform_fun Function. Inverse of transform_fun. Required if transform_fun is specified.
 #'
 #' @returns
 #' An object of class `zi_mod` with defined `print()` and `summary()` methods.
@@ -51,7 +53,9 @@ saeczi <- function(samp_dat,
                    B = 100L,
                    mse_est = FALSE,
                    estimand = "means",
-                   parallel = FALSE) {
+                   parallel = FALSE,
+                   transform_fun = NULL,
+                   inv_transform_fun = NULL) {
 
   funcCall <- match.call()
 
@@ -60,7 +64,18 @@ saeczi <- function(samp_dat,
   check_inherits("character", domain_level, estimand)
   check_inherits("integer", B)
   check_inherits("logical", mse_est, parallel)
-  
+  if (!is.null(transform_fun)) {
+    if (is.null(inv_transform_fun)) {
+      stop("inv_transform_fun must be specified when transform_fun is specified.")
+    }
+    check_inherits("function", transform_fun)
+    check_inherits("function", inv_transform_fun)
+    
+    if (inv_transform_fun(transform_fun(14)) != 14) {
+      warning("Rudimentary check on inv_transform_fun failed\nAre you sure inv_transform_fun is the inverse of transform_fun?")
+    }
+    
+  }
   check_parallel(parallel)
   check_re(pop_dat, samp_dat, domain_level)
 
@@ -81,17 +96,18 @@ saeczi <- function(samp_dat,
   original_out <- fit_zi(samp_dat,
                          lin_formula,
                          log_formula,
-                         domain_level)
+                         domain_level,
+                         transform_fun)
 
   mod1 <- original_out$lmer
   mod2 <- original_out$glmer
 
   .data <- pop_dat[, c(all_preds, domain_level)]
 
-  original_pred <- collect_preds(mod1, mod2, estimand, .data, domain_level)
+  original_pred <- collect_preds(mod1, mod2, estimand, .data, domain_level, inv_transform_fun)
 
   if (mse_est) {
-
+    
     boot_pop_data <- generate_boot_pop(original_out,
                                        pop_dat,
                                        domain_level,
@@ -102,13 +118,39 @@ saeczi <- function(samp_dat,
     boot_log_formula <- reformulate(c(log_X, rand_intercept), "response != 0")
 
     if (estimand == "means") {
-      boot_truth <- boot_pop_data |>
-        group_by(!!sym(domain_level)) |>
-        summarise(domain_est = mean(response))
+      
+      if (!is.null(inv_transform_fun)) {
+        
+        boot_truth <- boot_pop_data |>
+          mutate(response = inv_transform_fun(response)) |>
+          group_by(!!sym(domain_level)) |>
+          summarise(domain_est = mean(response))
+        
+      } else {
+        
+        boot_truth <- boot_pop_data |>
+          group_by(!!sym(domain_level)) |>
+          summarise(domain_est = mean(response)) 
+        
+      }
+      
     } else {
-      boot_truth <- boot_pop_data |>
-        group_by(!!sym(domain_level)) |>
-        summarise(domain_est = sum(response))
+      
+      if (!is.null(inv_transform_fun)) {
+        
+        boot_truth <- boot_pop_data |>
+          mutate(response = inv_transform_fun(response)) |>
+          group_by(!!sym(domain_level)) |>
+          summarise(domain_est = sum(response))
+        
+      } else {
+        
+        boot_truth <- boot_pop_data |>
+          group_by(!!sym(domain_level)) |>
+          summarise(domain_est = sum(response)) 
+        
+      }
+
     }
 
     boot_samp_ls <- samp_by_grp(samp_dat, boot_pop_data, domain_level, B)
@@ -124,7 +166,8 @@ saeczi <- function(samp_dat,
                                  boot_truth,
                                  estimand,
                                  lin_X,
-                                 log_X)
+                                 log_X,
+                                 inv_transform_fun)
         })
 
     } else {
@@ -173,7 +216,8 @@ saeczi <- function(samp_dat,
                                  u_glm = u_glm,
                                  lin_X = lin_X,
                                  log_X = log_X,
-                                 estimand = estimand)
+                                 estimand = estimand,
+                                 inv = inv_transform_fun)
     
 
       boot_res <- preds_full

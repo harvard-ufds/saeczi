@@ -13,7 +13,9 @@ saeczi(
   B = 100L,
   mse_est = FALSE,
   estimand = "means",
-  parallel = FALSE
+  parallel = FALSE,
+  transform_fun = NULL,
+  inv_transform_fun = NULL
 )
 }
 \arguments{
@@ -33,7 +35,11 @@ saeczi(
 
 \item{estimand}{String. Whether the estimates should be 'totals' or 'means'.}
 
-\item{parallel}{Logical. Should the MSE estimation be computed in parallel}
+\item{parallel}{Logical. Should the MSE estimation be computed in parallel.}
+
+\item{transform_fun}{Function. Function to be applied to the response variable prior to modeling.}
+
+\item{inv_transform_fun}{Function. Inverse of transform_fun. Required if transform_fun is specified.}
 }
 \value{
 An object of class `zi_mod` with defined `print()` and `summary()` methods.
