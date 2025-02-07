@@ -13,7 +13,9 @@ saeczi(
   B = 100L,
   mse_est = FALSE,
   estimand = "means",
-  parallel = FALSE
+  parallel = FALSE,
+  transform_fun = NULL,
+  inv_transform_fun = NULL
 )
 }
 \arguments{

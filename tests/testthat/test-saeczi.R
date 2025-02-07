@@ -22,13 +22,6 @@ test_that("result$res is a df", {
   expect_s3_class(result$res, "data.frame")
 })
 
-
-# if (Sys.info()["sysname"] == "Darwin") {
-#   test_that("result is correct", {
-#     expect_snapshot(result$res$est)
-#   }) 
-# }
-
 test_that("mse column is not NA", {
   expect_equal(all(!is.na(result$res$mse)), T)
 })
