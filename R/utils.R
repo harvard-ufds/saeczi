@@ -546,6 +546,8 @@ check_inherits <- function(what, ...) {
       if (!inherits(opts[[i]], what)) {
         stop(paste0(opts[[i]], " needs to be of class ", what))
       }
+    } else {
+      stop("unable to check NULL objects")
     }
   } # i
   invisible(opts)

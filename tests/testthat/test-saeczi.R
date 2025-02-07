@@ -1,17 +1,11 @@
 data(pop)
 data(samp)
 
-lin_formula <- sqrtbio ~ tcc16 
-
-samp <- samp |> 
-  dplyr::mutate(sqrtbio = sqrt(DRYBIO_AG_TPA_live_ADJ))
-  
-
 set.seed(5)
 suppressWarnings(
   result <- saeczi(samp,
                    pop, 
-                   lin_formula,
+                   lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
                    domain_level = "COUNTYFIPS",
                    mse_est = TRUE,
                    B = 10L,
@@ -22,12 +16,9 @@ test_that("result$res is a df", {
   expect_s3_class(result$res, "data.frame")
 })
 
-test_that("mse column is not NA", {
-  expect_equal(all(!is.na(result$res$mse)), T)
-})
-
-test_that("mse column exists", {
+test_that("mse column exists and is not NA", {
   expect_contains(names(result$res), "mse")
+  expect_equal(all(!is.na(result$res$mse)), T)
 })
 
 test_that("correct number of rows in result data.frame", {

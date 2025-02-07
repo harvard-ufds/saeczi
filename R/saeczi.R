@@ -8,7 +8,9 @@
 #' @param B Integer. The number of bootstraps to be used in MSE estimation.
 #' @param mse_est Logical. Whether or not MSE estimation should happen.
 #' @param estimand String. Whether the estimates should be 'totals' or 'means'.
-#' @param parallel Logical. Should the MSE estimation be computed in parallel
+#' @param parallel Logical. Should the MSE estimation be computed in parallel.
+#' @param transform_fun Function. Function to be applied to the response variable prior to modeling.
+#' @param inv_transform_fun Function. Inverse of transform_fun. Required if transform_fun is specified.
 #'
 #' @returns
 #' An object of class `zi_mod` with defined `print()` and `summary()` methods.
@@ -63,6 +65,9 @@ saeczi <- function(samp_dat,
   check_inherits("integer", B)
   check_inherits("logical", mse_est, parallel)
   if (!is.null(transform_fun)) {
+    if (is.null(inv_transform_fun)) {
+      stop("inv_transform_fun must be specified when transform_fun is specified.")
+    }
     check_inherits("function", transform_fun)
     check_inherits("function", inv_transform_fun)
   }
