@@ -70,6 +70,11 @@ saeczi <- function(samp_dat,
     }
     check_inherits("function", transform_fun)
     check_inherits("function", inv_transform_fun)
+    
+    if (inv_transform_fun(transform_fun(14)) != 14) {
+      warning("Rudimentary check on inv_transform_fun failed\nAre you sure inv_transform_fun is the inverse of transform_fun?")
+    }
+    
   }
   check_parallel(parallel)
   check_re(pop_dat, samp_dat, domain_level)

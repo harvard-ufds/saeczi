@@ -25,3 +25,45 @@ test_that("correct number of rows in result data.frame", {
   expect_equal(nrow(result$res), length(unique(pop$COUNTYFIPS)))
 })
 
+test_that("transform function checks work", {
+  
+  # no inv function supplied
+  expect_error(
+    result <- saeczi(samp,
+                     pop, 
+                     lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
+                     domain_level = "COUNTYFIPS",
+                     mse_est = TRUE,
+                     B = 10L,
+                     parallel = FALSE,
+                     transform_fun = sqrt)
+  )
+  
+  # incorrect inv function
+  expect_warning(
+    result <- saeczi(samp,
+                     pop, 
+                     lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
+                     domain_level = "COUNTYFIPS",
+                     mse_est = TRUE,
+                     B = 10L,
+                     parallel = FALSE,
+                     transform_fun = sqrt,
+                     inv_transform_fun = \(x) x^3)
+  )
+  
+  # both properly supplied
+  expect_no_error(
+    result <- saeczi(samp,
+                     pop, 
+                     lin_formula = DRYBIO_AG_TPA_live_ADJ ~ tcc16,
+                     domain_level = "COUNTYFIPS",
+                     mse_est = TRUE,
+                     B = 10L,
+                     parallel = FALSE,
+                     transform_fun = sqrt,
+                     inv_transform_fun = \(x) x^2)
+  )
+  
+})
+
