@@ -47,7 +47,9 @@
 <span>  B <span class="op">=</span> <span class="fl">100L</span>,</span>
 <span>  mse_est <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  estimand <span class="op">=</span> <span class="st">"means"</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  transform_fun <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  inv_transform_fun <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -88,7 +90,15 @@
 
 
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
-<dd><p>Logical. Should the MSE estimation be computed in parallel</p></dd>
+<dd><p>Logical. Should the MSE estimation be computed in parallel.</p></dd>
+
+
+<dt id="arg-transform-fun">transform_fun<a class="anchor" aria-label="anchor" href="#arg-transform-fun"></a></dt>
+<dd><p>Function. Function to be applied to the response variable prior to modeling.</p></dd>
+
+
+<dt id="arg-inv-transform-fun">inv_transform_fun<a class="anchor" aria-label="anchor" href="#arg-inv-transform-fun"></a></dt>
+<dd><p>Function. Inverse of transform_fun. Required if transform_fun is specified.</p></dd>
 
 </dl></div>
     <div class="section level2">
