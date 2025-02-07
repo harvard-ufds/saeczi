@@ -14,7 +14,7 @@ void preds_calc(Eigen::MatrixXd& result,
                 const Eigen::MatrixXd& u_glm,
                 int j,
                 int B,
-                std::string estimand,
+                const std::string estimand,
                 Rcpp::Nullable<Rcpp::Function> inv) {
   
   // these are N_j x B
@@ -53,7 +53,7 @@ SEXP generate_preds(const Eigen::MatrixXd& beta_lm,
                     const Eigen::MatrixXd& u_glm,
                     const Rcpp::List& design_mats,
                     int J,
-                    std::string estimand,
+                    const std::string estimand,
                     Rcpp::Nullable<Rcpp::Function> inv) {
   
   int B = u_lm.rows();
@@ -64,8 +64,8 @@ SEXP generate_preds(const Eigen::MatrixXd& beta_lm,
   for (int j = 0; j < J; ++j) {
     
     Rcpp::List dmats_j = design_mats[j];
-    Eigen::MatrixXd dmat_lm_j = dmats_j[0];
-    Eigen::MatrixXd dmat_glm_j = dmats_j[1];
+    Eigen::MatrixXd dmat_lm_j = Rcpp::as<Eigen::MatrixXd>(dmats_j[0]);
+    Eigen::MatrixXd dmat_glm_j = Rcpp::as<Eigen::MatrixXd>(dmats_j[1]);
     
     preds_calc(result,
                beta_lm,

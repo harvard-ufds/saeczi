@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // generate_preds
-SEXP generate_preds(const Eigen::MatrixXd& beta_lm, const Eigen::MatrixXd& beta_glm, const Eigen::MatrixXd& u_lm, const Eigen::MatrixXd& u_glm, const Rcpp::List& design_mats, int J, std::string estimand, Rcpp::Nullable<Rcpp::Function> inv);
+SEXP generate_preds(const Eigen::MatrixXd& beta_lm, const Eigen::MatrixXd& beta_glm, const Eigen::MatrixXd& u_lm, const Eigen::MatrixXd& u_glm, const Rcpp::List& design_mats, int J, const std::string estimand, Rcpp::Nullable<Rcpp::Function> inv);
 RcppExport SEXP _saeczi_generate_preds(SEXP beta_lmSEXP, SEXP beta_glmSEXP, SEXP u_lmSEXP, SEXP u_glmSEXP, SEXP design_matsSEXP, SEXP JSEXP, SEXP estimandSEXP, SEXP invSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -23,7 +23,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type u_glm(u_glmSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List& >::type design_mats(design_matsSEXP);
     Rcpp::traits::input_parameter< int >::type J(JSEXP);
-    Rcpp::traits::input_parameter< std::string >::type estimand(estimandSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type estimand(estimandSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::Function> >::type inv(invSEXP);
     rcpp_result_gen = Rcpp::wrap(generate_preds(beta_lm, beta_glm, u_lm, u_glm, design_mats, J, estimand, inv));
     return rcpp_result_gen;
